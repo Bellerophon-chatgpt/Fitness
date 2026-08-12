@@ -57,4 +57,42 @@ export const Ic = {
       <path d="M4 12l5 5L20 6" />
     </svg>
   ),
+  voeding: (s = 22) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 3v7M8 3v7M5 10a3 3 0 003 0M6.5 10v11M15 3c-1.5 1.5-2 4-2 6 0 2 1 3 2.5 3s2.5-1 2.5-3c0-2-.5-4.5-3-6zM15.5 12v9" />
+    </svg>
+  ),
+  barcode: (s = 20, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 5v14M7 5v14M11 5v14M14 5v14M18 5v14M21 5v14" />
+    </svg>
+  ),
+  flame: (s = 14, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3c1 3 4 4.5 4 8a4 4 0 01-8 0c0-1.2.4-2 1-3 .2 1 .8 1.6 1.6 1.8C10 8 11 5.5 12 3z" />
+    </svg>
+  ),
+  camera: (s = 18, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 8a2 2 0 012-2h2l1.5-2h7L17 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+      <circle cx="12" cy="12.5" r="3.2" />
+    </svg>
+  ),
+  search: (s = 18, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="7" />
+      <path d="M21 21l-4.3-4.3" />
+    </svg>
+  ),
+  trash: (s = 17, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
+    </svg>
+  ),
+  copy: (s = 16, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="9" width="11" height="11" rx="2.5" />
+      <path d="M5 15V5a2 2 0 012-2h8" />
+    </svg>
+  ),
 };

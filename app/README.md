@@ -33,6 +33,22 @@ npm run build
 npm run preview
 ```
 
+## Voeding / macro-tracking
+
+The **Voeding** tab logs food per day, split across Ontbijt, Lunch, Diner and Snacks, and tracks carbohydrate, protein and fat (plus calories) against editable daily goals. A day's totals are shown as a macro ring; tap it to set your goals.
+
+Adding food supports three routes:
+
+- **Barcode scanner** — uses the device camera (`@zxing/browser`, lazy-loaded so it stays out of the main bundle) to read EAN/UPC codes, then looks the product up in [Open Food Facts](https://world.openfoodfacts.org) and pre-fills the macros. No API key is required. If a barcode isn't in the database, it falls back to manual entry with the code pre-filled. A manual barcode field is also provided in case the camera is unavailable.
+- **Search** — a search box matches a built-in list of common foods and, when online, queries Open Food Facts by name.
+- **Eigen voeding** — enter a name and per-100 g/ml macros by hand.
+
+Each logged item stores its macros *per 100 g/ml*, so editing the amount rescales the calories and macros automatically. Nutrition data is saved in the same `localStorage` store as the training schema and rides along on the optional Supabase sync.
+
+Camera access requires a secure context (HTTPS or `localhost`) — the Vercel deployment and `localhost` dev server both qualify.
+
+The **Doelen** tab summarises the week's nutrition: a 7-day bar chart that switches between calories and each macro (protein / carbs / fat) with a dashed goal line, plus average macros over the days you actually logged (shown against your daily goals). An empty day in the Voeding tab offers a "Kopieer vorige dag" button that clones the previous day's log.
+
 ## Notes on deviations from the design bundle
 
 - The prototype wrapped the app in a fake iOS device frame (`ios-frame.jsx`) for previewing on a design canvas. That's dropped here — on a real phone the OS provides the status bar/home indicator, so the app fills the viewport directly and uses `env(safe-area-inset-*)` for notch/home-indicator spacing instead.

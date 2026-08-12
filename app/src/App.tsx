@@ -11,7 +11,9 @@ import { SchemaTab } from './screens/SchemaTab';
 import { AddPicker } from './screens/AddPicker';
 import { CoachingTab } from './screens/CoachingTab';
 import { DoelenTab } from './screens/DoelenTab';
-import type { OverlayState, SetEntry, Store, TabId, Theme } from './types';
+import { VoedingTab } from './screens/VoedingTab';
+import { emptyDay, hasFood, newId, shiftKey } from './data/nutrition';
+import type { FoodItem, Macros, MealId, OverlayState, SetEntry, Store, TabId, Theme } from './types';
 
 function readTheme(): Theme {
   try {
@@ -138,6 +140,45 @@ export default function App() {
       arr.splice(to, 0, m);
     });
 
+  const addFood = (dk: string, meal: MealId, item: FoodItem) => {
+    update((n) => {
+      if (!n.nutrition) n.nutrition = {};
+      if (!n.nutrition[dk]) n.nutrition[dk] = emptyDay();
+      n.nutrition[dk]![meal].push(item);
+    });
+    flash(item.name + ' toegevoegd');
+  };
+
+  const updateFoodAmount = (dk: string, meal: MealId, id: string, amount: number) =>
+    update((n) => {
+      const it = n.nutrition?.[dk]?.[meal].find((f) => f.id === id);
+      if (it) it.amount = amount;
+    });
+
+  const removeFood = (dk: string, meal: MealId, id: string) =>
+    update((n) => {
+      const day = n.nutrition?.[dk];
+      if (day) day[meal] = day[meal].filter((f) => f.id !== id);
+    });
+
+  const setMacroGoals = (g: Macros) => update((n) => { n.macroGoals = g; });
+
+  const copyPreviousDay = (dk: string) => {
+    const prev = shiftKey(dk, -1);
+    if (!hasFood(storeRef.current.nutrition?.[prev])) return;
+    update((n) => {
+      const src = n.nutrition?.[prev];
+      if (!src) return;
+      if (!n.nutrition) n.nutrition = {};
+      if (!n.nutrition[dk]) n.nutrition[dk] = emptyDay();
+      const dst = n.nutrition[dk]!;
+      (['breakfast', 'lunch', 'dinner', 'snacks'] as MealId[]).forEach((meal) => {
+        src[meal].forEach((it) => dst[meal].push({ ...it, id: newId() }));
+      });
+    });
+    flash('Vorige dag gekopieerd');
+  };
+
   const openFocus = (day: number, exIdx: number) => setOverlay({ type: 'focus', day, exIdx });
   const openAdd = (day: number) => setOverlay({ type: 'add', day });
   const navFocus = (dir: 1 | -1) =>
@@ -186,9 +227,10 @@ export default function App() {
 
   let screen;
   if (tab === 'training') screen = <TrainingTab store={store} selDay={selDay} setSelDay={setSelDay} toggleSet={toggleSet} openFocus={openFocus} openAdd={openAdd} />;
+  else if (tab === 'voeding') screen = <VoedingTab store={store} addFood={addFood} updateAmount={updateFoodAmount} removeFood={removeFood} setGoals={setMacroGoals} copyPreviousDay={copyPreviousDay} />;
   else if (tab === 'schema') screen = <SchemaTab store={store} selDay={selDay} setSelDay={setSelDay} setExerciseSets={setExerciseSets} removeExercise={removeExercise} moveExercise={moveExercise} openAdd={openAdd} />;
   else if (tab === 'coaching') screen = <CoachingTab store={store} goDay={(i) => { setSelDay(i); setTab('training'); }} />;
-  else screen = <DoelenTab />;
+  else screen = <DoelenTab store={store} />;
 
   return (
     <SyncCtx.Provider value={{ offline, syncEnabled }}>

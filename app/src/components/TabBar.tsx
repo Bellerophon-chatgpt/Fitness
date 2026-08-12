@@ -3,6 +3,7 @@ import { Ic } from './Icons';
 
 const TABS: [TabId, string, (s?: number) => React.ReactNode][] = [
   ['training', 'Training', Ic.training],
+  ['voeding', 'Voeding', Ic.voeding],
   ['schema', 'Schema', Ic.schema],
   ['coaching', 'Coaching', Ic.coaching],
   ['doelen', 'Doelen', Ic.doelen],
