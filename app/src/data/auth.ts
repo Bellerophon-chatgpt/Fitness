@@ -16,22 +16,13 @@ export function onAuthChange(cb: (s: Session | null) => void): () => void {
   return () => data.subscription.unsubscribe();
 }
 
-// Sends a 6-digit login code (and magic link) to the given email.
-export async function sendLoginCode(email: string): Promise<string | null> {
+// Sends a magic sign-in link to the given email. Clicking it returns the user
+// to the app already authenticated (no code to type).
+export async function sendMagicLink(email: string): Promise<string | null> {
   if (!supabase) return 'Synchronisatie is niet geconfigureerd.';
   const { error } = await supabase.auth.signInWithOtp({
     email: email.trim().toLowerCase(),
-    options: { shouldCreateUser: true },
-  });
-  return error ? error.message : null;
-}
-
-export async function verifyLoginCode(email: string, token: string): Promise<string | null> {
-  if (!supabase) return 'Synchronisatie is niet geconfigureerd.';
-  const { error } = await supabase.auth.verifyOtp({
-    email: email.trim().toLowerCase(),
-    token: token.trim(),
-    type: 'email',
+    options: { shouldCreateUser: true, emailRedirectTo: window.location.origin },
   });
   return error ? error.message : null;
 }

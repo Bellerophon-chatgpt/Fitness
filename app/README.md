@@ -36,8 +36,8 @@ npm run preview
 ## Cross-device sync
 
 Training and nutrition sync across devices via Supabase. You sign in with a
-one-time code emailed to you (no password); each account has its own private
-row protected by row level security. Without the Supabase env vars the app runs
+magic link emailed to you (no password); each account has its own private row
+protected by row level security. Without the Supabase env vars the app runs
 local-only and shows a "use on this device only" option. See
 [`SYNC_SETUP.md`](./SYNC_SETUP.md) for the one-time dashboard setup (table, RLS,
 email template, env vars). Sign-out is at the bottom of the Doelen tab.
