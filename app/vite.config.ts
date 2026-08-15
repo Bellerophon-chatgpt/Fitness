@@ -12,7 +12,8 @@ export default defineConfig({
       manifest: {
         name: 'FORM&FUEL',
         short_name: 'F&F',
-        description: 'Snel je training loggen op je telefoon.',
+        description: 'Log je training en houd je macro\u2019s bij \u2014 op elk apparaat.',
+        lang: 'nl',
         theme_color: '#0a0a0b',
         background_color: '#0a0a0b',
         display: 'standalone',
