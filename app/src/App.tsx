@@ -13,6 +13,9 @@ import { CoachingTab } from './screens/CoachingTab';
 import { DoelenTab } from './screens/DoelenTab';
 import { VoedingTab } from './screens/VoedingTab';
 import { emptyDay, hasFood, newId, shiftKey } from './data/nutrition';
+import { authEnabled, getSession, onAuthChange, signOut } from './data/auth';
+import { AuthGate } from './screens/AuthGate';
+import type { Session } from '@supabase/supabase-js';
 import type { FoodItem, Macros, MealId, OverlayState, SetEntry, Store, TabId, Theme } from './types';
 
 function readTheme(): Theme {
@@ -31,16 +34,32 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [theme, setTheme] = useState<Theme>(readTheme);
   const [offline, setOffline] = useState(!navigator.onLine);
+  const [session, setSession] = useState<Session | null>(null);
+  const [authReady, setAuthReady] = useState(!authEnabled);
+  const [skipAuth, setSkipAuth] = useState(false);
   const storeRef = useRef(store);
   storeRef.current = store;
   const pushTimer = useRef<number | null>(null);
 
-  // pull in whichever copy (local vs. remote) was written to most recently
+  // track the Supabase session (if auth is configured)
   useEffect(() => {
+    if (!authEnabled) return;
+    getSession().then((s) => {
+      setSession(s);
+      setAuthReady(true);
+    });
+    return onAuthChange((s) => setSession(s));
+  }, []);
+
+  // when signed in (or when running local-only), reconcile local vs. remote:
+  // whichever copy was written most recently wins
+  const uid = session?.user.id;
+  useEffect(() => {
+    if (authEnabled && !uid) return;
     reconcileStore(storeRef.current).then((remote) => {
       if (remote) setStore(remote);
     });
-  }, []);
+  }, [uid]);
 
   useEffect(() => {
     if (!syncEnabled) return;
@@ -179,6 +198,12 @@ export default function App() {
     flash('Vorige dag gekopieerd');
   };
 
+  const doSignOut = async () => {
+    await signOut();
+    setSession(null);
+    setSkipAuth(false);
+  };
+
   const openFocus = (day: number, exIdx: number) => setOverlay({ type: 'focus', day, exIdx });
   const openAdd = (day: number) => setOverlay({ type: 'add', day });
   const navFocus = (dir: 1 | -1) =>
@@ -225,15 +250,28 @@ export default function App() {
     };
   }, [overlay]);
 
+  const syncing = authEnabled && !!session;
+
+  if (authEnabled && !authReady) {
+    return (
+      <div className="ff-auth">
+        <div className="ff-wordmark" style={{ fontSize: 22 }}>FORM<b>&amp;</b>FUEL</div>
+      </div>
+    );
+  }
+  if (authEnabled && !session && !skipAuth) {
+    return <AuthGate onSkip={() => setSkipAuth(true)} />;
+  }
+
   let screen;
   if (tab === 'training') screen = <TrainingTab store={store} selDay={selDay} setSelDay={setSelDay} toggleSet={toggleSet} openFocus={openFocus} openAdd={openAdd} />;
   else if (tab === 'voeding') screen = <VoedingTab store={store} addFood={addFood} updateAmount={updateFoodAmount} removeFood={removeFood} setGoals={setMacroGoals} copyPreviousDay={copyPreviousDay} />;
   else if (tab === 'schema') screen = <SchemaTab store={store} selDay={selDay} setSelDay={setSelDay} setExerciseSets={setExerciseSets} removeExercise={removeExercise} moveExercise={moveExercise} openAdd={openAdd} />;
   else if (tab === 'coaching') screen = <CoachingTab store={store} goDay={(i) => { setSelDay(i); setTab('training'); }} />;
-  else screen = <DoelenTab store={store} />;
+  else screen = <DoelenTab store={store} email={session?.user.email ?? null} onSignOut={session ? doSignOut : undefined} />;
 
   return (
-    <SyncCtx.Provider value={{ offline, syncEnabled }}>
+    <SyncCtx.Provider value={{ offline, syncEnabled: syncing }}>
       <ThemeCtx.Provider value={{ theme, toggle: toggleTheme }}>
         <div className="ff-root">
           <div style={{ flex: 1, minHeight: 0 }}>{screen}</div>

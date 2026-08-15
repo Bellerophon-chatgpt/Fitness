@@ -37,7 +37,7 @@ function weeklyAverage(store: Store): { avg: Macros; loggedDays: number } {
   };
 }
 
-export function DoelenTab({ store }: { store: Store }) {
+export function DoelenTab({ store, email, onSignOut }: { store: Store; email?: string | null; onSignOut?: () => void }) {
   const goals = store.macroGoals ?? DEFAULT_GOALS;
   const { avg, loggedDays } = weeklyAverage(store);
 
@@ -102,6 +102,20 @@ export function DoelenTab({ store }: { store: Store }) {
               </div>
             );
           })}
+
+          {(email || onSignOut) && (
+            <>
+              <div className="ff-sublabel" style={{ margin: '22px 0 10px' }}>Account</div>
+              <div className="ff-account">
+                <div style={{ minWidth: 0 }}>
+                  <div className="ff-account-state">{email ? 'Gesynchroniseerd' : 'Alleen dit apparaat'}</div>
+                  {email && <div className="ff-account-email">{email}</div>}
+                </div>
+                {onSignOut && <button className="ff-account-out" onClick={onSignOut}>Uitloggen</button>}
+              </div>
+            </>
+          )}
+          <div style={{ height: 8 }} />
         </div>
       </div>
     </div>

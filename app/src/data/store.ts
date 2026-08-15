@@ -4,7 +4,14 @@ import { supabase } from './supabase';
 
 const FF_KEY = 'ff_proto_v3';
 const FF_META_KEY = 'ff_proto_v3_meta';
-const ROW_ID = 'main';
+
+// The remote row is keyed by the signed-in user's id, so every account has its
+// own private copy (enforced by row level security). No user → no remote sync.
+async function currentUid(): Promise<string | null> {
+  if (!supabase) return null;
+  const { data } = await supabase.auth.getUser();
+  return data.user?.id ?? null;
+}
 
 interface Meta {
   updatedAt: string;
@@ -55,15 +62,19 @@ export const syncEnabled = !!supabase;
 
 export async function fetchRemoteStore(): Promise<{ store: Store; updatedAt: string } | null> {
   if (!supabase) return null;
-  const { data, error } = await supabase.from('training_store').select('data, updated_at').eq('id', ROW_ID).maybeSingle();
+  const uid = await currentUid();
+  if (!uid) return null;
+  const { data, error } = await supabase.from('training_store').select('data, updated_at').eq('id', uid).maybeSingle();
   if (error || !data) return null;
   return { store: data.data as Store, updatedAt: data.updated_at as string };
 }
 
 export async function pushRemoteStore(s: Store): Promise<boolean> {
   if (!supabase) return false;
+  const uid = await currentUid();
+  if (!uid) return false;
   const updatedAt = new Date().toISOString();
-  const { error } = await supabase.from('training_store').upsert({ id: ROW_ID, data: s, updated_at: updatedAt });
+  const { error } = await supabase.from('training_store').upsert({ id: uid, data: s, updated_at: updatedAt });
   if (error) return false;
   saveMeta({ updatedAt, dirty: false });
   return true;

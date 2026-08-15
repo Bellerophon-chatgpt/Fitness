@@ -33,6 +33,15 @@ npm run build
 npm run preview
 ```
 
+## Cross-device sync
+
+Training and nutrition sync across devices via Supabase. You sign in with a
+one-time code emailed to you (no password); each account has its own private
+row protected by row level security. Without the Supabase env vars the app runs
+local-only and shows a "use on this device only" option. See
+[`SYNC_SETUP.md`](./SYNC_SETUP.md) for the one-time dashboard setup (table, RLS,
+email template, env vars). Sign-out is at the bottom of the Doelen tab.
+
 ## Voeding / macro-tracking
 
 The **Voeding** tab logs food per day, split across Ontbijt, Lunch, Diner and Snacks, and tracks carbohydrate, protein and fat (plus calories) against editable daily goals. A day's totals are shown as a macro ring; tap it to set your goals.
