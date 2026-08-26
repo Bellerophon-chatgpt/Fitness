@@ -317,3 +317,5 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--ff-bg); }
 .ff-account-email { font-family: var(--ff-mono); font-size: 12px; color: var(--ff-muted); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ff-account-out { flex-shrink: 0; background: transparent; border: 1px solid var(--ff-line); border-radius: 10px; padding: 8px 14px; color: var(--ff-muted); font-family: var(--ff-mono); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .ff-account-out:active { color: #e0664a; border-color: #5a2c24; }
+
+.ff-scan-frame.hit .c { border-color: var(--ff-good); }
