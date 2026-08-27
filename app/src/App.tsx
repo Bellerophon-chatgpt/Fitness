@@ -12,7 +12,7 @@ import { AddPicker } from './screens/AddPicker';
 import { CoachingTab } from './screens/CoachingTab';
 import { DoelenTab } from './screens/DoelenTab';
 import { VoedingTab } from './screens/VoedingTab';
-import { emptyDay, hasFood, newId, shiftKey } from './data/nutrition';
+import { emptyDay, hasFood, newId, pushRecent, shiftKey } from './data/nutrition';
 import { authEnabled, getSession, onAuthChange, signOut } from './data/auth';
 import { AuthGate } from './screens/AuthGate';
 import type { Session } from '@supabase/supabase-js';
@@ -164,6 +164,7 @@ export default function App() {
       if (!n.nutrition) n.nutrition = {};
       if (!n.nutrition[dk]) n.nutrition[dk] = emptyDay();
       n.nutrition[dk]![meal].push(item);
+      n.recentFoods = pushRecent(n.recentFoods, item);
     });
     flash(item.name + ' toegevoegd');
   };

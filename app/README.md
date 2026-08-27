@@ -52,7 +52,7 @@ Adding food supports three routes:
 - **Search** — a search box matches a built-in list of common foods and, when online, queries Open Food Facts by name.
 - **Eigen voeding** — enter a name and per-100 g/ml macros by hand.
 
-Each logged item stores its macros *per 100 g/ml*, so editing the amount rescales the calories and macros automatically. Nutrition data is saved in the same `localStorage` store as the training schema and rides along on the optional Supabase sync.
+Each logged item stores its macros *per 100 g/ml*, so editing the amount rescales the calories and macros automatically. Foods you've logged before appear under "Recent" in the food picker (deduped, most-recent first, remembering the last amount used) for quick re-adding. Nutrition data — including recents — is saved in the same store as the training schema and rides along on the optional Supabase sync.
 
 Camera access requires a secure context (HTTPS or `localhost`) — the Vercel deployment and `localhost` dev server both qualify.
 

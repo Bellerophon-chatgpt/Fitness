@@ -7,10 +7,11 @@ import {
   lookupBarcode,
   MEAL_LABEL,
   newId,
+  recentToCandidate,
   scale,
   searchFoods,
 } from '../data/nutrition';
-import type { FoodItem, MealId } from '../types';
+import type { FoodItem, MealId, RecentFood } from '../types';
 
 const BarcodeScanner = lazy(() => import('./BarcodeScanner'));
 
@@ -26,10 +27,12 @@ const blankDraft = (barcode?: string): FoodCandidate => ({
 
 export function FoodPicker({
   meal,
+  recents,
   onAdd,
   onClose,
 }: {
   meal: MealId;
+  recents: RecentFood[];
   onAdd: (item: FoodItem) => void;
   onClose: () => void;
 }) {
@@ -46,9 +49,12 @@ export function FoodPicker({
   const [custom, setCustom] = useState(false);
 
   const ql = q.trim().toLowerCase();
-  const localMatches = ql
-    ? COMMON_FOODS.filter((f) => f.name.toLowerCase().includes(ql) || (f.brand || '').toLowerCase().includes(ql))
-    : COMMON_FOODS;
+  const match = (name: string, brand?: string) =>
+    name.toLowerCase().includes(ql) || (brand || '').toLowerCase().includes(ql);
+  const recentCands = (ql ? recents.filter((r) => match(r.name, r.brand)) : recents)
+    .slice(0, 8)
+    .map(recentToCandidate);
+  const localMatches = ql ? COMMON_FOODS.filter((f) => match(f.name, f.brand)) : COMMON_FOODS;
 
   // debounced Open Food Facts text search
   const reqId = useRef(0);
@@ -212,9 +218,18 @@ export function FoodPicker({
 
         <div className="ff-scroll" style={{ margin: '14px -18px 0' }}>
           <div style={{ padding: '0 18px' }}>
+            {recentCands.length > 0 && (
+              <>
+                <div className="ff-sublabel" style={{ marginBottom: 8 }}>Recent</div>
+                {recentCands.map((f, i) => (
+                  <FoodRow key={'r' + i} c={f} onClick={() => openDetail(f)} />
+                ))}
+              </>
+            )}
+
             {localMatches.length > 0 && (
               <>
-                <div className="ff-sublabel" style={{ marginBottom: 8 }}>{ql ? 'Veelgebruikt' : 'Veelgebruikt — tik om toe te voegen'}</div>
+                <div className="ff-sublabel" style={{ margin: recentCands.length > 0 ? '18px 0 8px' : '0 0 8px' }}>{ql ? 'Veelgebruikt' : 'Veelgebruikt — tik om toe te voegen'}</div>
                 {localMatches.map((f, i) => (
                   <FoodRow key={'l' + i} c={f} onClick={() => openDetail(f)} />
                 ))}

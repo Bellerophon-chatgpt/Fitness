@@ -43,11 +43,25 @@ export interface FoodItem {
 
 export type NutritionDay = Record<MealId, FoodItem[]>;
 
+// A food the user has logged before, kept for quick re-adding.
+export interface RecentFood {
+  key: string; // dedupe key (barcode, or name+brand)
+  name: string;
+  brand?: string;
+  per100: Macros;
+  unit: 'g' | 'ml';
+  defaultAmount: number; // the amount last logged
+  barcode?: string;
+  lastUsed: number; // epoch ms
+  count: number;
+}
+
 export interface Store {
   days: Days;
   // keyed by ISO date (YYYY-MM-DD)
   nutrition?: Record<string, NutritionDay>;
   macroGoals?: Macros;
+  recentFoods?: RecentFood[];
 }
 
 export type OverlayState =

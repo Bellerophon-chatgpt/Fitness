@@ -1,4 +1,4 @@
-import type { FoodItem, Macros, MealId, NutritionDay } from '../types';
+import type { FoodItem, Macros, MealId, NutritionDay, RecentFood } from '../types';
 
 export const MEALS: [MealId, string][] = [
   ['breakfast', 'Ontbijt'],
@@ -67,6 +67,44 @@ export function shiftKey(dk: string, deltaDays: number): string {
 export function hasFood(day: NutritionDay | undefined): boolean {
   if (!day) return false;
   return day.breakfast.length + day.lunch.length + day.dinner.length + day.snacks.length > 0;
+}
+
+// --- recent foods ---------------------------------------------------------
+
+function foodKey(f: { barcode?: string; name: string; brand?: string }): string {
+  const bc = f.barcode?.replace(/\D/g, '');
+  if (bc) return 'b:' + bc;
+  return 'n:' + f.name.trim().toLowerCase() + '|' + (f.brand || '').trim().toLowerCase();
+}
+
+// Records a just-logged food at the top of the recents list (deduped, capped).
+export function pushRecent(list: RecentFood[] | undefined, item: FoodItem): RecentFood[] {
+  const key = foodKey(item);
+  const prev = list || [];
+  const existing = prev.find((r) => r.key === key);
+  const entry: RecentFood = {
+    key,
+    name: item.name,
+    brand: item.brand,
+    per100: item.per100,
+    unit: item.unit,
+    defaultAmount: item.amount,
+    barcode: item.barcode,
+    lastUsed: Date.now(),
+    count: (existing?.count || 0) + 1,
+  };
+  return [entry, ...prev.filter((r) => r.key !== key)].slice(0, 40);
+}
+
+export function recentToCandidate(r: RecentFood): FoodCandidate {
+  return {
+    name: r.name,
+    brand: r.brand,
+    per100: r.per100,
+    unit: r.unit,
+    defaultAmount: r.defaultAmount,
+    barcode: r.barcode,
+  };
 }
 
 export function newId(): string {

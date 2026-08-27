@@ -140,6 +140,7 @@ export function VoedingTab({
       {picker && (
         <FoodPicker
           meal={picker}
+          recents={store.recentFoods ?? []}
           onAdd={(item) => addFood(dk, picker, item)}
           onClose={() => setPicker(null)}
         />
