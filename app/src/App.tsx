@@ -12,11 +12,11 @@ import { AddPicker } from './screens/AddPicker';
 import { CoachingTab } from './screens/CoachingTab';
 import { DoelenTab } from './screens/DoelenTab';
 import { VoedingTab } from './screens/VoedingTab';
-import { emptyDay, hasFood, newId, pushRecent, shiftKey } from './data/nutrition';
+import { dateKey, emptyDay, hasFood, newId, pushRecent, shiftKey } from './data/nutrition';
 import { authEnabled, getSession, onAuthChange, signOut } from './data/auth';
 import { AuthGate } from './screens/AuthGate';
 import type { Session } from '@supabase/supabase-js';
-import type { FoodItem, Macros, MealId, OverlayState, SetEntry, Store, TabId, Theme } from './types';
+import type { FoodItem, Macros, MealId, OverlayState, SetEntry, StrengthGoal, Store, TabId, Theme } from './types';
 
 function readTheme(): Theme {
   try {
@@ -183,6 +183,20 @@ export default function App() {
 
   const setMacroGoals = (g: Macros) => update((n) => { n.macroGoals = g; });
 
+  const logWeight = (kg: number) => {
+    const d = dateKey(new Date());
+    update((n) => {
+      const log = (n.weightLog || []).filter((w) => w.date !== d);
+      log.push({ date: d, kg });
+      log.sort((a, b) => (a.date < b.date ? -1 : 1));
+      n.weightLog = log;
+    });
+    flash('Gewicht opgeslagen');
+  };
+
+  const setWeightGoal = (kg: number) => update((n) => { n.weightGoal = kg; });
+  const setStrengthGoals = (list: StrengthGoal[]) => update((n) => { n.strengthGoals = list; });
+
   const copyPreviousDay = (dk: string) => {
     const prev = shiftKey(dk, -1);
     if (!hasFood(storeRef.current.nutrition?.[prev])) return;
@@ -269,7 +283,7 @@ export default function App() {
   else if (tab === 'voeding') screen = <VoedingTab store={store} addFood={addFood} updateAmount={updateFoodAmount} removeFood={removeFood} setGoals={setMacroGoals} copyPreviousDay={copyPreviousDay} />;
   else if (tab === 'schema') screen = <SchemaTab store={store} selDay={selDay} setSelDay={setSelDay} setExerciseSets={setExerciseSets} removeExercise={removeExercise} moveExercise={moveExercise} openAdd={openAdd} />;
   else if (tab === 'coaching') screen = <CoachingTab store={store} goDay={(i) => { setSelDay(i); setTab('training'); }} />;
-  else screen = <DoelenTab store={store} email={session?.user.email ?? null} onSignOut={session ? doSignOut : undefined} />;
+  else screen = <DoelenTab store={store} email={session?.user.email ?? null} onSignOut={session ? doSignOut : undefined} logWeight={logWeight} setWeightGoal={setWeightGoal} setStrengthGoals={setStrengthGoals} />;
 
   return (
     <SyncCtx.Provider value={{ offline, syncEnabled: syncing }}>

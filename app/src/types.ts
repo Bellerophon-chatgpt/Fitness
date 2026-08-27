@@ -56,12 +56,30 @@ export interface RecentFood {
   count: number;
 }
 
+// A dated bodyweight measurement (one kept per day).
+export interface WeightEntry {
+  date: string; // YYYY-MM-DD
+  kg: number;
+}
+
+// A user-defined strength target (e.g. a 1RM to work toward).
+export interface StrengthGoal {
+  id: string;
+  name: string;
+  cur: number;
+  target: number;
+  unit: string;
+}
+
 export interface Store {
   days: Days;
   // keyed by ISO date (YYYY-MM-DD)
   nutrition?: Record<string, NutritionDay>;
   macroGoals?: Macros;
   recentFoods?: RecentFood[];
+  weightLog?: WeightEntry[];
+  weightGoal?: number;
+  strengthGoals?: StrengthGoal[];
 }
 
 export type OverlayState =

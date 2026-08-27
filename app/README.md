@@ -56,7 +56,7 @@ Each logged item stores its macros *per 100 g/ml*, so editing the amount rescale
 
 Camera access requires a secure context (HTTPS or `localhost`) — the Vercel deployment and `localhost` dev server both qualify.
 
-The **Doelen** tab summarises the week's nutrition: a 7-day bar chart that switches between calories and each macro (protein / carbs / fat) with a dashed goal line, plus average macros over the days you actually logged (shown against your daily goals). An empty day in the Voeding tab offers a "Kopieer vorige dag" button that clones the previous day's log.
+The **Doelen** tab summarises the week's nutrition: a 7-day bar chart that switches between calories and each macro (protein / carbs / fat) with a dashed goal line, plus average macros over the days you actually logged (shown against your daily goals). The two stat tiles are computed from your actual weekly schedule (training days and total sets). It also tracks **bodyweight** — log today's weight to build a trend line with an editable target — and lets you keep **editable strength goals** (tap one to edit, or add your own). An empty day in the Voeding tab offers a "Kopieer vorige dag" button that clones the previous day's log.
 
 ## Notes on deviations from the design bundle
 

@@ -319,3 +319,22 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--ff-bg); }
 .ff-account-out:active { color: #e0664a; border-color: #5a2c24; }
 
 .ff-scan-frame.hit .c { border-color: var(--ff-good); }
+
+/* bodyweight tracker (Doelen) */
+.ff-weight { background: var(--ff-card); border: 1px solid var(--ff-line); border-radius: 16px; padding: 16px; }
+.ff-weight-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+.ff-weight-now { font-family: var(--ff-mono); font-size: 30px; font-weight: 700; line-height: 1; color: var(--ff-text); }
+.ff-weight-now span { font-size: 14px; color: var(--ff-muted); font-weight: 400; }
+.ff-weight-delta { font-family: var(--ff-mono); font-size: 12px; color: var(--ff-amber); }
+.ff-wchart { display: block; height: 110px; margin: 4px 0 14px; overflow: visible; }
+.ff-wchart-val { fill: var(--ff-amber); font-family: var(--ff-mono); font-size: 11px; font-weight: 700; }
+.ff-weight-row { display: flex; gap: 10px; align-items: stretch; }
+.ff-weight-row .ff-macrofield { padding: 8px 0; }
+.ff-weight-row .ff-btn { height: auto; }
+.ff-weight-goalrow { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ff-line); }
+.ff-weight-goalrow > span { font-size: 14px; font-weight: 600; }
+.ff-weight-goalfield { width: 120px; padding: 6px 0; }
+.ff-weight-goalfield .ff-numinput { font-size: 20px; }
+
+.ff-goal-tap { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ff-goal-tap:active { border-color: var(--ff-amber-dim); }
