@@ -338,3 +338,10 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--ff-bg); }
 
 .ff-goal-tap { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .ff-goal-tap:active { border-color: var(--ff-amber-dim); }
+
+/* "nog te gaan vandaag" strip (Voeding) */
+.ff-remain { display: flex; gap: 8px; margin-top: 10px; }
+.ff-remain-cell { flex: 1; background: var(--ff-card); border: 1px solid var(--ff-line); border-radius: 12px; padding: 10px 4px; text-align: center; }
+.ff-remain-cell .v { font-family: var(--ff-mono); font-size: 17px; font-weight: 700; line-height: 1; }
+.ff-remain-cell .l { font-family: var(--ff-mono); font-size: 9px; letter-spacing: .04em; color: var(--ff-muted); text-transform: uppercase; margin-top: 4px; }
+.ff-remain-cap { font-family: var(--ff-mono); font-size: 10px; letter-spacing: .1em; color: var(--ff-faint); text-transform: uppercase; margin: 8px 0 0 2px; }

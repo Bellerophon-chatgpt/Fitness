@@ -90,6 +90,14 @@ export function VoedingTab({
             </div>
           </div>
 
+          <div className="ff-remain">
+            <RemainCell label="kcal" value={goals.kcal - total.kcal} color="var(--ff-amber)" />
+            <RemainCell label="koolh." unit="g" value={goals.carbs - total.carbs} color="var(--ff-carb)" />
+            <RemainCell label="eiwit" unit="g" value={goals.protein - total.protein} color="var(--ff-protein)" />
+            <RemainCell label="vet" unit="g" value={goals.fat - total.fat} color="var(--ff-fat)" />
+          </div>
+          <div className="ff-remain-cap">{total.kcal <= goals.kcal ? 'Nog te gaan vandaag' : 'Boven je dagdoel'}</div>
+
           {dayEmpty && prevHasFood && (
             <button className="ff-copy-btn" onClick={() => copyPreviousDay(dk)}>
               {Ic.copy(16)} Kopieer vorige dag
@@ -165,6 +173,17 @@ export function VoedingTab({
       {goalOpen && (
         <GoalSheet goals={goals} onSave={(g) => { setGoals(g); setGoalOpen(false); }} onClose={() => setGoalOpen(false)} />
       )}
+    </div>
+  );
+}
+
+function RemainCell({ label, value, color, unit }: { label: string; value: number; color: string; unit?: string }) {
+  const over = value < -0.5;
+  const disp = Math.abs(Math.round(value));
+  return (
+    <div className="ff-remain-cell">
+      <div className="v" style={{ color: over ? 'var(--ff-faint)' : color }}>{disp}{unit || ''}</div>
+      <div className="l">{label}{over ? ' te veel' : ''}</div>
     </div>
   );
 }
