@@ -197,6 +197,18 @@ export default function App() {
   const setWeightGoal = (kg: number) => update((n) => { n.weightGoal = kg; });
   const setStrengthGoals = (list: StrengthGoal[]) => update((n) => { n.strengthGoals = list; });
 
+  const replaceStore = (next: Store) => {
+    setStore(() => {
+      saveStore(next);
+      if (syncEnabled) {
+        if (pushTimer.current) window.clearTimeout(pushTimer.current);
+        pushTimer.current = window.setTimeout(() => pushRemoteStore(next), 400);
+      }
+      return next;
+    });
+    flash('Back-up geïmporteerd');
+  };
+
   const copyPreviousDay = (dk: string) => {
     const prev = shiftKey(dk, -1);
     if (!hasFood(storeRef.current.nutrition?.[prev])) return;
@@ -283,7 +295,7 @@ export default function App() {
   else if (tab === 'voeding') screen = <VoedingTab store={store} addFood={addFood} updateAmount={updateFoodAmount} removeFood={removeFood} setGoals={setMacroGoals} copyPreviousDay={copyPreviousDay} />;
   else if (tab === 'schema') screen = <SchemaTab store={store} selDay={selDay} setSelDay={setSelDay} setExerciseSets={setExerciseSets} removeExercise={removeExercise} moveExercise={moveExercise} openAdd={openAdd} />;
   else if (tab === 'coaching') screen = <CoachingTab store={store} goDay={(i) => { setSelDay(i); setTab('training'); }} />;
-  else screen = <DoelenTab store={store} email={session?.user.email ?? null} onSignOut={session ? doSignOut : undefined} logWeight={logWeight} setWeightGoal={setWeightGoal} setStrengthGoals={setStrengthGoals} />;
+  else screen = <DoelenTab store={store} email={session?.user.email ?? null} onSignOut={session ? doSignOut : undefined} logWeight={logWeight} setWeightGoal={setWeightGoal} setStrengthGoals={setStrengthGoals} onImport={replaceStore} />;
 
   return (
     <SyncCtx.Provider value={{ offline, syncEnabled: syncing }}>

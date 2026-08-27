@@ -58,6 +58,17 @@ Camera access requires a secure context (HTTPS or `localhost`) — the Vercel de
 
 The **Doelen** tab summarises the week's nutrition: a 7-day bar chart that switches between calories and each macro (protein / carbs / fat) with a dashed goal line, plus average macros over the days you actually logged (shown against your daily goals). The two stat tiles are computed from your actual weekly schedule (training days and total sets). It also tracks **bodyweight** — log today's weight to build a trend line with an editable target — and lets you keep **editable strength goals** (tap one to edit, or add your own). An empty day in the Voeding tab offers a "Kopieer vorige dag" button that clones the previous day's log.
 
+## Data backup
+
+The Doelen tab has a **Gegevens** section to export the full store as a JSON file and to import one back (import replaces the current data after a confirm). Handy as an occasional off-device backup on top of the Supabase sync.
+
+## Development
+
+- `npm run dev` — dev server
+- `npm run build` — type-check + production build
+- `npm run lint` — oxlint
+- `npm test` — unit tests (Vitest) for the nutrition math (`src/data/nutrition.test.ts`). Test files are excluded from the production build, so the deploy never depends on the test tooling.
+
 ## Notes on deviations from the design bundle
 
 - The prototype wrapped the app in a fake iOS device frame (`ios-frame.jsx`) for previewing on a design canvas. That's dropped here — on a real phone the OS provides the status bar/home indicator, so the app fills the viewport directly and uses `env(safe-area-inset-*)` for notch/home-indicator spacing instead.

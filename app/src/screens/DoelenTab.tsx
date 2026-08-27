@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { TopBar } from '../components/TopBar';
 import { MacroRing } from '../components/MacroRing';
 import { MacroBar } from '../components/MacroBar';
@@ -47,6 +47,7 @@ export function DoelenTab({
   logWeight,
   setWeightGoal,
   setStrengthGoals,
+  onImport,
 }: {
   store: Store;
   email?: string | null;
@@ -54,6 +55,7 @@ export function DoelenTab({
   logWeight: (kg: number) => void;
   setWeightGoal: (kg: number) => void;
   setStrengthGoals: (list: StrengthGoal[]) => void;
+  onImport: (s: Store) => void;
 }) {
   const goals = store.macroGoals ?? DEFAULT_GOALS;
   const { avg, loggedDays } = weeklyAverage(store);
@@ -73,6 +75,32 @@ export function DoelenTab({
   // strength goals (editable)
   const strength = store.strengthGoals ?? DEFAULT_STRENGTH;
   const [editSg, setEditSg] = useState<StrengthGoal | 'new' | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const exportBackup = () => {
+    const blob = new Blob([JSON.stringify(store, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `formfuel-backup-${dateKey(new Date())}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importBackup = async (file: File) => {
+    try {
+      const parsed = JSON.parse(await file.text()) as Store;
+      if (!parsed || typeof parsed !== 'object' || !parsed.days) {
+        alert('Dit lijkt geen geldige FORM&FUEL back-up.');
+        return;
+      }
+      if (confirm('Dit vervangt al je huidige gegevens (training en voeding) door de back-up. Doorgaan?')) {
+        onImport(parsed);
+      }
+    } catch {
+      alert('Kon het bestand niet lezen — is het een geldig back-up-bestand?');
+    }
+  };
 
   const saveStrength = (g: StrengthGoal) => {
     const exists = strength.some((s) => s.id === g.id);
@@ -171,6 +199,24 @@ export function DoelenTab({
           <button className="ff-btn ff-btn-ghost" style={{ marginTop: 4 }} onClick={() => setEditSg('new')}>
             + Doel toevoegen
           </button>
+
+          <div className="ff-sublabel" style={{ margin: '22px 0 10px' }}>Gegevens</div>
+          <div className="ff-data-row">
+            <button className="ff-btn ff-btn-ghost" onClick={exportBackup}>{Ic.copy(16)} Exporteer back-up</button>
+            <button className="ff-btn ff-btn-ghost" onClick={() => fileRef.current?.click()}>Importeer…</button>
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json,.json"
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) importBackup(f);
+              e.target.value = '';
+            }}
+          />
+          <div className="ff-data-hint">Bewaar af en toe een back-up als los bestand. Importeren vervangt je huidige gegevens.</div>
 
           {(email || onSignOut) && (
             <>
