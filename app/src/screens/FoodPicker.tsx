@@ -41,6 +41,7 @@ export function FoodPicker({
   const [online, setOnline] = useState<FoodCandidate[]>([]);
   const [searching, setSearching] = useState(false);
   const [notFound, setNotFound] = useState<string | null>(null);
+  const [offline, setOffline] = useState<string | null>(null);
   const [looking, setLooking] = useState(false);
 
   // detail step
@@ -82,20 +83,33 @@ export function FoodPicker({
     setAmount(c.defaultAmount || 100);
     setCustom(isCustom);
     setNotFound(null);
+    setOffline(null);
     setStep('detail');
   };
 
   const onScan = async (code: string) => {
     setStep('browse');
+    const clean = code.replace(/\D/g, '');
+
+    // 1) instant hit from foods you've logged before (works offline)
+    const r = recents.find((x) => x.barcode && x.barcode.replace(/\D/g, '') === clean);
+    if (r) { openDetail(recentToCandidate(r)); return; }
+
+    // 2) cache + Open Food Facts
     setLooking(true);
     setNotFound(null);
-    const found = await lookupBarcode(code);
+    setOffline(null);
+    const res = await lookupBarcode(clean);
     setLooking(false);
-    if (found) {
-      openDetail(found);
+
+    if (res.status === 'found') {
+      openDetail(res.food);
+    } else if (res.status === 'offline') {
+      openDetail(blankDraft(clean), true);
+      setOffline(clean);
     } else {
-      setNotFound(code);
-      openDetail(blankDraft(code), true);
+      openDetail(blankDraft(clean), true);
+      setNotFound(clean);
     }
   };
 
@@ -140,6 +154,9 @@ export function FoodPicker({
         <div className="ff-obody">
           {custom ? (
             <>
+              {offline && (
+                <div className="ff-note">Geen verbinding — kon barcode {offline} niet opzoeken. Vul de macro's nu handmatig in, of probeer later opnieuw online.</div>
+              )}
               {notFound && (
                 <div className="ff-note">Barcode {notFound} niet gevonden in de database — vul de gegevens zelf in.</div>
               )}

@@ -200,19 +200,70 @@ function mapProduct(p: OffProduct, barcode?: string): FoodCandidate | null {
   };
 }
 
-export async function lookupBarcode(barcode: string): Promise<FoodCandidate | null> {
+export type LookupResult =
+  | { status: 'found'; food: FoodCandidate }
+  | { status: 'notfound' }
+  | { status: 'offline' };
+
+// Local cache of barcode → product, so rescanning is instant and works offline.
+const CACHE_KEY = 'ff_off_cache_v1';
+const CACHE_TTL = 60 * 864e5; // ~60 days
+const CACHE_MAX = 300;
+
+interface CacheEntry { food: FoodCandidate; ts: number }
+
+function readCacheMap(): Record<string, CacheEntry> {
+  try {
+    return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}') as Record<string, CacheEntry>;
+  } catch {
+    return {};
+  }
+}
+
+function cacheGet(code: string): FoodCandidate | null {
+  const e = readCacheMap()[code];
+  if (!e) return null;
+  if (Date.now() - e.ts > CACHE_TTL) return null;
+  return e.food;
+}
+
+function cachePut(code: string, food: FoodCandidate): void {
+  try {
+    const m = readCacheMap();
+    m[code] = { food, ts: Date.now() };
+    const keys = Object.keys(m);
+    if (keys.length > CACHE_MAX) {
+      keys.sort((a, b) => m[a].ts - m[b].ts);
+      for (const k of keys.slice(0, keys.length - CACHE_MAX)) delete m[k];
+    }
+    localStorage.setItem(CACHE_KEY, JSON.stringify(m));
+  } catch {
+    // storage full / unavailable — cache is best-effort
+  }
+}
+
+export async function lookupBarcode(barcode: string): Promise<LookupResult> {
   const clean = barcode.replace(/\D/g, '');
-  if (!clean) return null;
+  if (!clean) return { status: 'notfound' };
+
+  const cached = cacheGet(clean);
+  if (cached) return { status: 'found', food: cached };
+
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return { status: 'offline' };
+
   try {
     const res = await fetch(`${OFF_BASE}/api/v2/product/${clean}.json?fields=${FIELDS}`, {
       headers: { Accept: 'application/json' },
     });
-    if (!res.ok) return null;
+    if (!res.ok) return { status: 'offline' }; // server/network hiccup — let the user retry
     const body = (await res.json()) as { status?: number; product?: OffProduct };
-    if (body.status !== 1 || !body.product) return null;
-    return mapProduct(body.product, clean);
+    if (body.status !== 1 || !body.product) return { status: 'notfound' };
+    const food = mapProduct(body.product, clean);
+    if (!food) return { status: 'notfound' };
+    cachePut(clean, food);
+    return { status: 'found', food };
   } catch {
-    return null;
+    return { status: 'offline' };
   }
 }
 

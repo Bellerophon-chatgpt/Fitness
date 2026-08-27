@@ -48,7 +48,7 @@ The **Voeding** tab logs food per day, split across Ontbijt, Lunch, Diner and Sn
 
 Adding food supports three routes:
 
-- **Barcode scanner** — uses the device camera (`@zxing/browser`, lazy-loaded so it stays out of the main bundle) to read EAN/UPC codes, then looks the product up in [Open Food Facts](https://world.openfoodfacts.org) and pre-fills the macros. No API key is required. If a barcode isn't in the database, it falls back to manual entry with the code pre-filled. A manual barcode field is also provided in case the camera is unavailable.
+- **Barcode scanner** — uses the device camera (native `BarcodeDetector` where available, `@zxing/browser` as a lazy-loaded fallback) to read EAN/UPC codes, then resolves the product to its macros. Lookups resolve in order: foods you've logged before, then a local barcode cache, then [Open Food Facts](https://world.openfoodfacts.org) (no API key). Cached and previously-logged products resolve instantly and work offline. If a code isn't found the app falls back to manual entry with the code pre-filled; being offline shows a distinct "no connection" message rather than "not found".
 - **Search** — a search box matches a built-in list of common foods and, when online, queries Open Food Facts by name.
 - **Eigen voeding** — enter a name and per-100 g/ml macros by hand.
 
