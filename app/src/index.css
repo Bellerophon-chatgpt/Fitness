@@ -350,3 +350,10 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--ff-bg); }
 .ff-data-row { display: flex; gap: 10px; }
 .ff-data-row .ff-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; }
 .ff-data-hint { font-size: 12px; color: var(--ff-faint); line-height: 1.5; margin-top: 8px; }
+
+/* adaptive goal preview */
+.ff-goalpreview { background: var(--ff-card-2); border: 1px solid var(--ff-line); border-radius: 14px; padding: 14px; margin-top: 16px; text-align: center; }
+.ff-goalpreview-kcal { font-family: var(--ff-mono); font-size: 26px; font-weight: 700; color: var(--ff-amber); line-height: 1; }
+.ff-goalpreview-kcal span { font-size: 13px; color: var(--ff-muted); font-weight: 400; }
+.ff-goalpreview-macros { display: flex; justify-content: center; gap: 12px; font-family: var(--ff-mono); font-size: 12px; font-weight: 700; margin-top: 10px; }
+.ff-goalpreview-note { font-size: 12px; color: var(--ff-muted); line-height: 1.5; margin-top: 10px; }

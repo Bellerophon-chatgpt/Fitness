@@ -16,7 +16,7 @@ import { dateKey, emptyDay, hasFood, newId, pushRecent, shiftKey } from './data/
 import { authEnabled, getSession, onAuthChange, signOut } from './data/auth';
 import { AuthGate } from './screens/AuthGate';
 import type { Session } from '@supabase/supabase-js';
-import type { FoodItem, Macros, MealId, OverlayState, SetEntry, StrengthGoal, Store, TabId, Theme } from './types';
+import type { FoodItem, Macros, MealId, OverlayState, Profile, SetEntry, StrengthGoal, Store, TabId, Theme } from './types';
 
 function readTheme(): Theme {
   try {
@@ -181,7 +181,13 @@ export default function App() {
       if (day) day[meal] = day[meal].filter((f) => f.id !== id);
     });
 
-  const setMacroGoals = (g: Macros) => update((n) => { n.macroGoals = g; });
+  const saveGoalConfig = (c: { mode: 'manual' | 'adaptive'; macroGoals: Macros; profile?: Profile; goalRate: number }) =>
+    update((n) => {
+      n.calorieMode = c.mode;
+      n.goalRate = c.goalRate;
+      if (c.profile) n.profile = c.profile;
+      if (c.mode === 'manual') n.macroGoals = c.macroGoals;
+    });
 
   const logWeight = (kg: number) => {
     const d = dateKey(new Date());
@@ -292,7 +298,7 @@ export default function App() {
 
   let screen;
   if (tab === 'training') screen = <TrainingTab store={store} selDay={selDay} setSelDay={setSelDay} toggleSet={toggleSet} openFocus={openFocus} openAdd={openAdd} />;
-  else if (tab === 'voeding') screen = <VoedingTab store={store} addFood={addFood} updateAmount={updateFoodAmount} removeFood={removeFood} setGoals={setMacroGoals} copyPreviousDay={copyPreviousDay} />;
+  else if (tab === 'voeding') screen = <VoedingTab store={store} addFood={addFood} updateAmount={updateFoodAmount} removeFood={removeFood} saveGoalConfig={saveGoalConfig} copyPreviousDay={copyPreviousDay} />;
   else if (tab === 'schema') screen = <SchemaTab store={store} selDay={selDay} setSelDay={setSelDay} setExerciseSets={setExerciseSets} removeExercise={removeExercise} moveExercise={moveExercise} openAdd={openAdd} />;
   else if (tab === 'coaching') screen = <CoachingTab store={store} goDay={(i) => { setSelDay(i); setTab('training'); }} />;
   else screen = <DoelenTab store={store} email={session?.user.email ?? null} onSignOut={session ? doSignOut : undefined} logWeight={logWeight} setWeightGoal={setWeightGoal} setStrengthGoals={setStrengthGoals} onImport={replaceStore} />;

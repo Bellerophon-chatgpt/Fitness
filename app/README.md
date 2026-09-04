@@ -58,6 +58,8 @@ Camera access requires a secure context (HTTPS or `localhost`) — the Vercel de
 
 The **Doelen** tab summarises the week's nutrition: a 7-day bar chart that switches between calories and each macro (protein / carbs / fat) with a dashed goal line, plus average macros over the days you actually logged (shown against your daily goals). The two stat tiles are computed from your actual weekly schedule (training days and total sets). It also tracks **bodyweight** — log today's weight to build a trend line with an editable target — and lets you keep **editable strength goals** (tap one to edit, or add your own). An empty day in the Voeding tab offers a "Kopieer vorige dag" button that clones the previous day's log.
 
+Daily targets can be set two ways (tap the macro ring to switch): **manual** macro goals, or **adaptive** — you pick a goal (lose/maintain/gain at a chosen rate) and the app derives your calorie and macro targets. It estimates maintenance from your bodyweight trend and actual intake once there's enough history (least-squares weight slope vs. average logged intake), and falls back to a Mifflin–St Jeor formula estimate (from sex/age/height/activity) until then. The target then follows your weight, MacroFactor-style.
+
 ## Data backup
 
 The Doelen tab has a **Gegevens** section to export the full store as a JSON file and to import one back (import replaces the current data after a confirm). Handy as an occasional off-device backup on top of the Supabase sync.

@@ -6,7 +6,8 @@ import { WeekChart } from '../components/WeekChart';
 import { WeightChart } from '../components/WeightChart';
 import { EditNum } from '../components/EditNum';
 import { Ic } from '../components/Icons';
-import { dateKey, dayTotal, DEFAULT_GOALS, hasFood, newId, ZERO } from '../data/nutrition';
+import { dateKey, dayTotal, hasFood, newId, ZERO } from '../data/nutrition';
+import { activeGoals } from '../data/goals';
 import type { DaySchema, Macros, StrengthGoal, Store } from '../types';
 
 const DEFAULT_STRENGTH: StrengthGoal[] = [
@@ -57,7 +58,7 @@ export function DoelenTab({
   setStrengthGoals: (list: StrengthGoal[]) => void;
   onImport: (s: Store) => void;
 }) {
-  const goals = store.macroGoals ?? DEFAULT_GOALS;
+  const goals = activeGoals(store).goals;
   const { avg, loggedDays } = weeklyAverage(store);
 
   // real training stats from the weekly schema

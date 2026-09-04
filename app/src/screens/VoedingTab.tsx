@@ -18,7 +18,8 @@ import {
   shiftKey,
 } from '../data/nutrition';
 import { FoodPicker } from './FoodPicker';
-import type { FoodItem, Macros, MealId, Store } from '../types';
+import { activeGoals, estimateMaintenance, deriveMacros } from '../data/goals';
+import type { Activity, FoodItem, Macros, MealId, Profile, Store } from '../types';
 
 function dayLabel(offset: number, d: Date): string {
   const rel = offset === 0 ? 'Vandaag' : offset === -1 ? 'Gisteren' : offset === 1 ? 'Morgen' : DAYS_LONG[(d.getDay() + 6) % 7];
@@ -30,14 +31,14 @@ export function VoedingTab({
   addFood,
   updateAmount,
   removeFood,
-  setGoals,
+  saveGoalConfig,
   copyPreviousDay,
 }: {
   store: Store;
   addFood: (dk: string, meal: MealId, item: FoodItem) => void;
   updateAmount: (dk: string, meal: MealId, id: string, amount: number) => void;
   removeFood: (dk: string, meal: MealId, id: string) => void;
-  setGoals: (g: Macros) => void;
+  saveGoalConfig: (c: { mode: 'manual' | 'adaptive'; macroGoals: Macros; profile?: Profile; goalRate: number }) => void;
   copyPreviousDay: (dk: string) => void;
 }) {
   const [offset, setOffset] = useState(0);
@@ -53,7 +54,7 @@ export function VoedingTab({
   const dk = dateKey(selDate);
 
   const day = store.nutrition?.[dk] ?? emptyDay();
-  const goals = store.macroGoals ?? DEFAULT_GOALS;
+  const goals = activeGoals(store).goals;
   const total = dayTotal(day);
   const dayEmpty = !hasFood(store.nutrition?.[dk]);
   const prevHasFood = hasFood(store.nutrition?.[shiftKey(dk, -1)]);
@@ -171,7 +172,7 @@ export function VoedingTab({
       )}
 
       {goalOpen && (
-        <GoalSheet goals={goals} onSave={(g) => { setGoals(g); setGoalOpen(false); }} onClose={() => setGoalOpen(false)} />
+        <GoalSheet store={store} onSave={(c) => { saveGoalConfig(c); setGoalOpen(false); }} onClose={() => setGoalOpen(false)} />
       )}
     </div>
   );
@@ -235,22 +236,116 @@ function AmountSheet({
   );
 }
 
-function GoalSheet({ goals, onSave, onClose }: { goals: Macros; onSave: (g: Macros) => void; onClose: () => void }) {
-  const [g, setG] = useState<Macros>(goals);
-  const set = (k: keyof Macros, v: number) => setG((p) => ({ ...p, [k]: Math.max(0, v) }));
+const ACTIVITY_LABELS: [Activity, string][] = [
+  ['low', 'Weinig'],
+  ['medium', 'Licht'],
+  ['high', 'Actief'],
+  ['veryhigh', 'Zeer'],
+];
+
+function GoalSheet({
+  store,
+  onSave,
+  onClose,
+}: {
+  store: Store;
+  onSave: (c: { mode: 'manual' | 'adaptive'; macroGoals: Macros; profile?: Profile; goalRate: number }) => void;
+  onClose: () => void;
+}) {
+  const [mode, setMode] = useState<'manual' | 'adaptive'>(store.calorieMode ?? 'manual');
+  const [g, setG] = useState<Macros>(store.macroGoals ?? DEFAULT_GOALS);
+  const setMacro = (k: keyof Macros, v: number) => setG((p) => ({ ...p, [k]: Math.max(0, v) }));
+
+  const [profile, setProfile] = useState<Profile>(store.profile ?? { sex: 'm', age: 30, heightCm: 180, activity: 'medium' });
+  const setP = <K extends keyof Profile>(k: K, v: Profile[K]) => setProfile((p) => ({ ...p, [k]: v }));
+  const [rate, setRate] = useState<number>(store.goalRate ?? 0);
+
+  const currentKg = store.weightLog?.length ? store.weightLog[store.weightLog.length - 1].kg : null;
+
+  // live preview for adaptive mode using the in-sheet profile/rate
+  const previewStore: Store = { ...store, profile, calorieMode: 'adaptive', goalRate: rate };
+  const est = estimateMaintenance(previewStore);
+  const preview = est ? deriveMacros(est.tdee + (rate * 7700) / 7, currentKg) : null;
+
+  const save = () => onSave({ mode, macroGoals: g, profile, goalRate: rate });
+
   return (
     <div className="ff-sheet-scrim" onClick={onClose}>
-      <div className="ff-bottomsheet" onClick={(e) => e.stopPropagation()}>
+      <div className="ff-bottomsheet" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '86vh', overflowY: 'auto' }}>
         <div className="ff-sheet-grab" />
         <div className="ff-food-name" style={{ marginBottom: 2 }}>Dagdoelen</div>
-        <div className="ff-food-brand">Stel je streefwaarden in</div>
-        <div className="ff-macroform" style={{ marginTop: 16 }}>
-          <div className="ff-macrofield"><EditNum value={g.kcal} unit="kcal" round onCommit={(v) => set('kcal', v)} /></div>
-          <div className="ff-macrofield"><EditNum value={g.carbs} unit="koolh. g" round onCommit={(v) => set('carbs', v)} /></div>
-          <div className="ff-macrofield"><EditNum value={g.protein} unit="eiwit g" round onCommit={(v) => set('protein', v)} /></div>
-          <div className="ff-macrofield"><EditNum value={g.fat} unit="vet g" round onCommit={(v) => set('fat', v)} /></div>
+        <div className="ff-food-brand">Handmatig instellen of automatisch laten berekenen</div>
+
+        <div className="ff-seg" style={{ marginTop: 14 }}>
+          <button className={'ff-seg-btn' + (mode === 'manual' ? ' on' : '')} onClick={() => setMode('manual')}>Handmatig</button>
+          <button className={'ff-seg-btn' + (mode === 'adaptive' ? ' on' : '')} onClick={() => setMode('adaptive')}>Adaptief</button>
         </div>
-        <button className="ff-btn ff-btn-primary" style={{ marginTop: 18 }} onClick={() => onSave(g)}>Opslaan</button>
+
+        {mode === 'manual' ? (
+          <div className="ff-macroform" style={{ marginTop: 16 }}>
+            <div className="ff-macrofield"><EditNum value={g.kcal} unit="kcal" round onCommit={(v) => setMacro('kcal', v)} /></div>
+            <div className="ff-macrofield"><EditNum value={g.carbs} unit="koolh. g" round onCommit={(v) => setMacro('carbs', v)} /></div>
+            <div className="ff-macrofield"><EditNum value={g.protein} unit="eiwit g" round onCommit={(v) => setMacro('protein', v)} /></div>
+            <div className="ff-macrofield"><EditNum value={g.fat} unit="vet g" round onCommit={(v) => setMacro('fat', v)} /></div>
+          </div>
+        ) : (
+          <>
+            <div className="ff-sublabel" style={{ margin: '16px 0 8px' }}>Doel</div>
+            <div className="ff-seg">
+              <button className={'ff-seg-btn' + (rate < 0 ? ' on' : '')} onClick={() => setRate(-0.4)}>Afvallen</button>
+              <button className={'ff-seg-btn' + (rate === 0 ? ' on' : '')} onClick={() => setRate(0)}>Onderhoud</button>
+              <button className={'ff-seg-btn' + (rate > 0 ? ' on' : '')} onClick={() => setRate(0.25)}>Aankomen</button>
+            </div>
+            {rate !== 0 && (
+              <div className="ff-macroform" style={{ marginTop: 10, gridTemplateColumns: '1fr' }}>
+                <div className="ff-macrofield"><EditNum value={Math.abs(rate)} unit="kg / week" onCommit={(v) => setRate((rate < 0 ? -1 : 1) * Math.abs(v))} /></div>
+              </div>
+            )}
+
+            <div className="ff-sublabel" style={{ margin: '16px 0 8px' }}>Over jou</div>
+            <div className="ff-seg">
+              <button className={'ff-seg-btn' + (profile.sex === 'm' ? ' on' : '')} onClick={() => setP('sex', 'm')}>Man</button>
+              <button className={'ff-seg-btn' + (profile.sex === 'f' ? ' on' : '')} onClick={() => setP('sex', 'f')}>Vrouw</button>
+            </div>
+            <div className="ff-macroform" style={{ marginTop: 10 }}>
+              <div className="ff-macrofield"><EditNum value={profile.age} unit="jaar" round onCommit={(v) => setP('age', Math.max(1, v))} /></div>
+              <div className="ff-macrofield"><EditNum value={profile.heightCm} unit="cm" round onCommit={(v) => setP('heightCm', Math.max(1, v))} /></div>
+            </div>
+            <div className="ff-sublabel" style={{ margin: '14px 0 8px' }}>Beweging</div>
+            <div className="ff-seg">
+              {ACTIVITY_LABELS.map(([a, lab]) => (
+                <button key={a} className={'ff-seg-btn' + (profile.activity === a ? ' on' : '')} onClick={() => setP('activity', a)}>{lab}</button>
+              ))}
+            </div>
+
+            <div className="ff-goalpreview">
+              {preview && est ? (
+                <>
+                  <div className="ff-goalpreview-kcal">{preview.kcal}<span> kcal / dag</span></div>
+                  <div className="ff-goalpreview-macros">
+                    <span style={{ color: 'var(--ff-carb)' }}>{preview.carbs}g koolh.</span>
+                    <span style={{ color: 'var(--ff-protein)' }}>{preview.protein}g eiwit</span>
+                    <span style={{ color: 'var(--ff-fat)' }}>{preview.fat}g vet</span>
+                  </div>
+                  <div className="ff-goalpreview-note">
+                    Onderhoud ≈ {est.tdee} kcal · {est.basis === 'data' ? 'op basis van je gewichtstrend en inname' : 'geschat met de Mifflin–St Jeor-formule'}
+                  </div>
+                </>
+              ) : (
+                <div className="ff-goalpreview-note">
+                  {currentKg == null
+                    ? 'Log eerst je gewicht in de Doelen-tab, dan kan ik een schatting maken.'
+                    : 'Vul je gegevens in voor een schatting.'}
+                </div>
+              )}
+            </div>
+            <div className="ff-data-hint" style={{ marginTop: 8 }}>
+              Zodra je een paar weken gewicht en voeding logt, stapt de schatting automatisch over van de formule naar je eigen data.
+            </div>
+          </>
+        )}
+
+        <button className="ff-btn ff-btn-primary" style={{ marginTop: 18 }} disabled={mode === 'adaptive' && !preview} onClick={save}>Opslaan</button>
       </div>
     </div>
   );

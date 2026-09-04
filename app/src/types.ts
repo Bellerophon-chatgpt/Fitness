@@ -71,6 +71,17 @@ export interface StrengthGoal {
   unit: string;
 }
 
+// Profile used for the formula-based calorie estimate (Mifflin–St Jeor).
+export type Sex = 'm' | 'f';
+export type Activity = 'low' | 'medium' | 'high' | 'veryhigh';
+
+export interface Profile {
+  sex: Sex;
+  age: number;
+  heightCm: number;
+  activity: Activity;
+}
+
 export interface Store {
   days: Days;
   // keyed by ISO date (YYYY-MM-DD)
@@ -80,6 +91,10 @@ export interface Store {
   weightLog?: WeightEntry[];
   weightGoal?: number;
   strengthGoals?: StrengthGoal[];
+  // adaptive calorie goals
+  calorieMode?: 'manual' | 'adaptive';
+  profile?: Profile;
+  goalRate?: number; // kg per week, signed (− lose, + gain, 0 maintain)
 }
 
 export type OverlayState =
