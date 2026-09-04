@@ -357,3 +357,19 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--ff-bg); }
 .ff-goalpreview-kcal span { font-size: 13px; color: var(--ff-muted); font-weight: 400; }
 .ff-goalpreview-macros { display: flex; justify-content: center; gap: 12px; font-family: var(--ff-mono); font-size: 12px; font-weight: 700; margin-top: 10px; }
 .ff-goalpreview-note { font-size: 12px; color: var(--ff-muted); line-height: 1.5; margin-top: 10px; }
+
+/* session log button (Training) */
+.ff-loglog { width: 100%; height: 52px; border-radius: 14px; border: 1px solid var(--ff-amber-dim); background: transparent; color: var(--ff-amber); font-family: var(--ff-mono); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; -webkit-tap-highlight-color: transparent; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.ff-loglog:active { background: var(--ff-card); }
+.ff-loglog.done { background: var(--ff-amber); border-color: var(--ff-amber); color: #1a1304; }
+
+/* week session dots (Doelen) */
+.ff-weekdots { background: var(--ff-card); border: 1px solid var(--ff-line); border-radius: 16px; padding: 14px; }
+.ff-weekdots-row { display: flex; gap: 6px; }
+.ff-weekdot { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.ff-weekdot span { font-family: var(--ff-mono); font-size: 9px; letter-spacing: .04em; color: var(--ff-faint); }
+.ff-weekdot i { width: 100%; height: 8px; border-radius: 99px; background: var(--ff-line); }
+.ff-weekdot.on i { background: var(--ff-amber); }
+.ff-weekdot.today span { color: var(--ff-amber); }
+.ff-weekdot.today i { box-shadow: 0 0 0 2px var(--ff-amber-dim); }
+.ff-weekdots-cap { font-family: var(--ff-mono); font-size: 10px; letter-spacing: .06em; color: var(--ff-faint); text-transform: uppercase; margin-top: 12px; text-align: center; }

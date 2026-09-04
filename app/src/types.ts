@@ -18,6 +18,14 @@ export interface DaySchema {
 
 export type Days = Partial<Record<number, DaySchema>>;
 
+// A completed training session, stamped with its actual date.
+export interface SessionLog {
+  date: string; // YYYY-MM-DD
+  weekday: number; // 0-6 (Mon=0)
+  title?: string;
+  sets: number; // sets completed that session
+}
+
 // --- Nutrition / macro tracking ---
 
 export type MealId = 'breakfast' | 'lunch' | 'dinner' | 'snacks';
@@ -95,6 +103,7 @@ export interface Store {
   calorieMode?: 'manual' | 'adaptive';
   profile?: Profile;
   goalRate?: number; // kg per week, signed (− lose, + gain, 0 maintain)
+  sessions?: SessionLog[];
 }
 
 export type OverlayState =

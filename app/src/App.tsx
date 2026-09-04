@@ -203,6 +203,21 @@ export default function App() {
   const setWeightGoal = (kg: number) => update((n) => { n.weightGoal = kg; });
   const setStrengthGoals = (list: StrengthGoal[]) => update((n) => { n.strengthGoals = list; });
 
+  const toggleSessionToday = () => {
+    const dk = dateKey(new Date());
+    update((n) => {
+      const list = n.sessions ?? [];
+      if (list.some((s) => s.date === dk)) {
+        n.sessions = list.filter((s) => s.date !== dk);
+      } else {
+        const sch = n.days[TODAY];
+        let sets = 0;
+        if (sch) sch.ex.forEach((e) => e.sets.forEach((s) => { if (s.done) sets++; }));
+        n.sessions = [...list, { date: dk, weekday: TODAY, title: sch?.title, sets }];
+      }
+    });
+  };
+
   const replaceStore = (next: Store) => {
     setStore(() => {
       saveStore(next);
@@ -297,7 +312,7 @@ export default function App() {
   }
 
   let screen;
-  if (tab === 'training') screen = <TrainingTab store={store} selDay={selDay} setSelDay={setSelDay} toggleSet={toggleSet} openFocus={openFocus} openAdd={openAdd} />;
+  if (tab === 'training') screen = <TrainingTab store={store} selDay={selDay} setSelDay={setSelDay} toggleSet={toggleSet} openFocus={openFocus} openAdd={openAdd} toggleSession={toggleSessionToday} />;
   else if (tab === 'voeding') screen = <VoedingTab store={store} addFood={addFood} updateAmount={updateFoodAmount} removeFood={removeFood} saveGoalConfig={saveGoalConfig} copyPreviousDay={copyPreviousDay} />;
   else if (tab === 'schema') screen = <SchemaTab store={store} selDay={selDay} setSelDay={setSelDay} setExerciseSets={setExerciseSets} removeExercise={removeExercise} moveExercise={moveExercise} openAdd={openAdd} />;
   else if (tab === 'coaching') screen = <CoachingTab store={store} goDay={(i) => { setSelDay(i); setTab('training'); }} />;

@@ -1,5 +1,6 @@
 import { DAYS_LONG, TODAY } from '../data/constants';
 import { daysWithEx } from '../data/store';
+import { dateKey } from '../data/nutrition';
 import { Ic } from '../components/Icons';
 import { TopBar } from '../components/TopBar';
 import { DayStrip } from '../components/DayStrip';
@@ -12,6 +13,7 @@ export function TrainingTab({
   toggleSet,
   openFocus,
   openAdd,
+  toggleSession,
 }: {
   store: Store;
   selDay: number;
@@ -19,9 +21,18 @@ export function TrainingTab({
   toggleSet: (day: number, ei: number, si: number) => void;
   openFocus: (day: number, exIdx: number) => void;
   openAdd: (day: number) => void;
+  toggleSession: () => void;
 }) {
   const day = store.days[selDay];
   const dots = daysWithEx(store);
+  const todayLogged = (store.sessions ?? []).some((s) => s.date === dateKey(new Date()));
+  const showLog = selDay === TODAY;
+
+  const logBtn = showLog ? (
+    <button className={'ff-loglog' + (todayLogged ? ' done' : '')} onClick={toggleSession}>
+      {todayLogged ? <>{Ic.check(15)} Training afgerond — tik om ongedaan te maken</> : <>Training van vandaag afronden</>}
+    </button>
+  ) : null;
 
   let done = 0;
   let total = 0;
@@ -49,6 +60,7 @@ export function TrainingTab({
                 </button>
               </div>
             </div>
+            {logBtn && <div style={{ marginTop: 16 }}>{logBtn}</div>}
           </div>
         ) : (
           <>
@@ -99,6 +111,7 @@ export function TrainingTab({
               <button className="ff-btn ff-btn-ghost" style={{ marginTop: 12 }} onClick={() => openAdd(selDay)}>
                 + Oefening
               </button>
+              {logBtn && <div style={{ marginTop: 14 }}>{logBtn}</div>}
             </div>
           </>
         )}

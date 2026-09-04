@@ -8,7 +8,9 @@ import { EditNum } from '../components/EditNum';
 import { Ic } from '../components/Icons';
 import { dateKey, dayTotal, hasFood, newId, ZERO } from '../data/nutrition';
 import { activeGoals } from '../data/goals';
-import type { DaySchema, Macros, StrengthGoal, Store } from '../types';
+import { currentWeekDots, daysSinceLastSession, sessionsThisMonth, weekStreak } from '../data/training';
+import { DAYS_SHORT, TODAY } from '../data/constants';
+import type { Macros, StrengthGoal, Store } from '../types';
 
 const DEFAULT_STRENGTH: StrengthGoal[] = [
   { id: 'bench', name: 'Bench Press · 1RM', cur: 72, target: 80, unit: 'kg' },
@@ -61,10 +63,11 @@ export function DoelenTab({
   const goals = activeGoals(store).goals;
   const { avg, loggedDays } = weeklyAverage(store);
 
-  // real training stats from the weekly schema
-  const dayList = Object.values(store.days).filter(Boolean) as DaySchema[];
-  const trainingDays = dayList.filter((d) => d.ex.length > 0).length;
-  const weeklySets = dayList.reduce((n, d) => n + d.ex.reduce((s, e) => s + e.sets.length, 0), 0);
+  // real training stats from logged sessions
+  const monthSessions = sessionsThisMonth(store.sessions);
+  const streak = weekStreak(store.sessions);
+  const dots = currentWeekDots(store.sessions);
+  const sinceLast = daysSinceLastSession(store.sessions);
 
   // bodyweight
   const weightLog = store.weightLog ?? [];
@@ -122,9 +125,22 @@ export function DoelenTab({
           <div className="ff-h1" style={{ fontSize: 22 }}>Voortgang</div>
         </div>
 
-        <div className="ff-statgrid" style={{ marginBottom: 16 }}>
-          <div className="ff-stat"><div className="big">{trainingDays}</div><div className="lab">Trainingsdagen / week</div></div>
-          <div className="ff-stat"><div className="big">{weeklySets}</div><div className="lab">Sets / week</div></div>
+        <div className="ff-statgrid" style={{ marginBottom: 12 }}>
+          <div className="ff-stat"><div className="big">{monthSessions}</div><div className="lab">Sessies deze maand</div></div>
+          <div className="ff-stat"><div className="big">{streak}</div><div className="lab">Weken streak</div></div>
+        </div>
+        <div className="ff-weekdots" style={{ marginBottom: 16 }}>
+          <div className="ff-weekdots-row">
+            {dots.map((on, i) => (
+              <div key={i} className={'ff-weekdot' + (on ? ' on' : '') + (i === TODAY ? ' today' : '')}>
+                <span>{DAYS_SHORT[i]}</span>
+                <i />
+              </div>
+            ))}
+          </div>
+          <div className="ff-weekdots-cap">
+            {sinceLast == null ? 'Nog geen training gelogd' : sinceLast === 0 ? 'Laatste training: vandaag' : sinceLast === 1 ? 'Laatste training: gisteren' : `Laatste training: ${sinceLast} dagen geleden`}
+          </div>
         </div>
 
         <div className="ff-scroll">
