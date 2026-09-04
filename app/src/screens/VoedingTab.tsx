@@ -15,11 +15,15 @@ import {
   MEAL_LABEL,
   mealTotal,
   dayTotal,
+  dayMicros,
+  hasMicros,
   shiftKey,
 } from '../data/nutrition';
 import { FoodPicker } from './FoodPicker';
 import { activeGoals, estimateMaintenance, deriveMacros } from '../data/goals';
 import type { Activity, FoodItem, Macros, MealId, Profile, Store } from '../types';
+
+const WATER_GOAL = 2000; // ml
 
 function dayLabel(offset: number, d: Date): string {
   const rel = offset === 0 ? 'Vandaag' : offset === -1 ? 'Gisteren' : offset === 1 ? 'Morgen' : DAYS_LONG[(d.getDay() + 6) % 7];
@@ -33,6 +37,7 @@ export function VoedingTab({
   removeFood,
   saveGoalConfig,
   copyPreviousDay,
+  addWater,
 }: {
   store: Store;
   addFood: (dk: string, meal: MealId, item: FoodItem) => void;
@@ -40,6 +45,7 @@ export function VoedingTab({
   removeFood: (dk: string, meal: MealId, id: string) => void;
   saveGoalConfig: (c: { mode: 'manual' | 'adaptive'; macroGoals: Macros; profile?: Profile; goalRate: number }) => void;
   copyPreviousDay: (dk: string) => void;
+  addWater: (dk: string, deltaMl: number) => void;
 }) {
   const [offset, setOffset] = useState(0);
   const [picker, setPicker] = useState<MealId | null>(null);
@@ -99,6 +105,18 @@ export function VoedingTab({
           </div>
           <div className="ff-remain-cap">{total.kcal <= goals.kcal ? 'Nog te gaan vandaag' : 'Boven je dagdoel'}</div>
 
+          <div className="ff-water">
+            <div className="ff-water-head">
+              <div className="ff-water-val"><b>{store.water?.[dk] ?? 0}</b> / {WATER_GOAL} ml water</div>
+              <div className="ff-water-btns">
+                <button onClick={() => addWater(dk, -250)} aria-label="Minder water">−</button>
+                <button onClick={() => addWater(dk, 250)}>+250</button>
+                <button onClick={() => addWater(dk, 500)}>+500</button>
+              </div>
+            </div>
+            <div className="ff-progress"><i style={{ width: Math.min(100, ((store.water?.[dk] ?? 0) / WATER_GOAL) * 100) + '%', background: 'var(--ff-water)' }} /></div>
+          </div>
+
           {dayEmpty && prevHasFood && (
             <button className="ff-copy-btn" onClick={() => copyPreviousDay(dk)}>
               {Ic.copy(16)} Kopieer vorige dag
@@ -142,6 +160,21 @@ export function VoedingTab({
               </div>
             );
           })}
+
+          {hasMicros(day) && (() => {
+            const mic = dayMicros(day);
+            return (
+              <>
+                <div className="ff-sublabel" style={{ margin: '18px 0 8px' }}>Micronutriënten vandaag</div>
+                <div className="ff-remain">
+                  <div className="ff-remain-cell"><div className="v">{mic.fiber}g</div><div className="l">vezels</div></div>
+                  <div className="ff-remain-cell"><div className="v">{mic.sugar}g</div><div className="l">suiker</div></div>
+                  <div className="ff-remain-cell"><div className="v">{mic.satfat}g</div><div className="l">verz. vet</div></div>
+                  <div className="ff-remain-cell"><div className="v">{mic.salt}g</div><div className="l">zout</div></div>
+                </div>
+              </>
+            );
+          })()}
           <div style={{ height: 8 }} />
         </div>
       </div>

@@ -3,6 +3,9 @@ import {
   scale,
   sumMacros,
   itemMacros,
+  itemMicros,
+  dayMicros,
+  hasMicros,
   mealTotal,
   dayTotal,
   pushRecent,
@@ -142,6 +145,35 @@ describe('pushRecent', () => {
       list = pushRecent(list, { ...kwark, name: 'food-' + i });
     }
     expect(list.length).toBe(40);
+  });
+});
+
+describe('extra nutrients', () => {
+  const bread: FoodItem = {
+    id: 'b',
+    name: 'Volkoren brood',
+    amount: 70,
+    unit: 'g',
+    per100: { kcal: 247, carbs: 41, protein: 9, fat: 3.4 },
+    micros: { fiber: 7, sugar: 3, satfat: 0.6, salt: 1.1 },
+  };
+
+  it('scales extra nutrients by amount', () => {
+    expect(itemMicros(bread)).toEqual({ fiber: 4.9, sugar: 2.1, satfat: 0.4, salt: 0.77 });
+  });
+
+  it('returns empty when an item has no micro data', () => {
+    const plain: FoodItem = { id: 'p', name: 'x', amount: 100, unit: 'g', per100: { kcal: 100, carbs: 0, protein: 0, fat: 0 } };
+    expect(itemMicros(plain)).toEqual({});
+    expect(hasMicros({ ...emptyDay(), lunch: [plain] })).toBe(false);
+  });
+
+  it('sums a day and reports availability', () => {
+    const day = { ...emptyDay(), breakfast: [bread], dinner: [bread] };
+    expect(hasMicros(day)).toBe(true);
+    const m = dayMicros(day);
+    expect(m.fiber).toBe(9.8);
+    expect(m.salt).toBe(1.54);
   });
 });
 

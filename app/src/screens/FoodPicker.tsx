@@ -123,6 +123,7 @@ export function FoodPicker({
       amount: Math.max(1, Math.round(amount)),
       unit: cand.unit,
       per100: cand.per100,
+      micros: cand.micros,
       barcode: cand.barcode,
     };
     onAdd(item);
@@ -182,6 +183,16 @@ export function FoodPicker({
               <div className="ff-food-per100">
                 Per 100 {cand.unit}: {Math.round(cand.per100.kcal)} kcal · K {cand.per100.carbs} · E {cand.per100.protein} · V {cand.per100.fat}
               </div>
+              {cand.micros && (
+                <div className="ff-food-per100" style={{ marginTop: 4 }}>
+                  {[
+                    cand.micros.fiber != null ? `vezels ${cand.micros.fiber}` : null,
+                    cand.micros.sugar != null ? `suiker ${cand.micros.sugar}` : null,
+                    cand.micros.satfat != null ? `verz. vet ${cand.micros.satfat}` : null,
+                    cand.micros.salt != null ? `zout ${cand.micros.salt}` : null,
+                  ].filter(Boolean).join(' · ')}
+                </div>
+              )}
             </div>
           )}
 

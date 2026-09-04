@@ -46,7 +46,16 @@ export interface FoodItem {
   amount: number; // in grams or ml
   unit: 'g' | 'ml';
   per100: Macros;
+  micros?: Nutrients; // extra nutrients per 100 g/ml (from Open Food Facts)
   barcode?: string;
+}
+
+// Extra nutrients per 100 g/ml, all optional (data isn't always available).
+export interface Nutrients {
+  fiber?: number;
+  sugar?: number;
+  satfat?: number;
+  salt?: number;
 }
 
 export type NutritionDay = Record<MealId, FoodItem[]>;
@@ -57,6 +66,7 @@ export interface RecentFood {
   name: string;
   brand?: string;
   per100: Macros;
+  micros?: Nutrients;
   unit: 'g' | 'ml';
   defaultAmount: number; // the amount last logged
   barcode?: string;
@@ -104,6 +114,7 @@ export interface Store {
   profile?: Profile;
   goalRate?: number; // kg per week, signed (− lose, + gain, 0 maintain)
   sessions?: SessionLog[];
+  water?: Record<string, number>; // date (YYYY-MM-DD) → ml
 }
 
 export type OverlayState =

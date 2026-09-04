@@ -230,6 +230,12 @@ export default function App() {
     flash('Back-up geïmporteerd');
   };
 
+  const addWater = (dk: string, deltaMl: number) =>
+    update((n) => {
+      if (!n.water) n.water = {};
+      n.water[dk] = Math.max(0, (n.water[dk] || 0) + deltaMl);
+    });
+
   const copyPreviousDay = (dk: string) => {
     const prev = shiftKey(dk, -1);
     if (!hasFood(storeRef.current.nutrition?.[prev])) return;
@@ -313,7 +319,7 @@ export default function App() {
 
   let screen;
   if (tab === 'training') screen = <TrainingTab store={store} selDay={selDay} setSelDay={setSelDay} toggleSet={toggleSet} openFocus={openFocus} openAdd={openAdd} toggleSession={toggleSessionToday} />;
-  else if (tab === 'voeding') screen = <VoedingTab store={store} addFood={addFood} updateAmount={updateFoodAmount} removeFood={removeFood} saveGoalConfig={saveGoalConfig} copyPreviousDay={copyPreviousDay} />;
+  else if (tab === 'voeding') screen = <VoedingTab store={store} addFood={addFood} updateAmount={updateFoodAmount} removeFood={removeFood} saveGoalConfig={saveGoalConfig} copyPreviousDay={copyPreviousDay} addWater={addWater} />;
   else if (tab === 'schema') screen = <SchemaTab store={store} selDay={selDay} setSelDay={setSelDay} setExerciseSets={setExerciseSets} removeExercise={removeExercise} moveExercise={moveExercise} openAdd={openAdd} />;
   else if (tab === 'coaching') screen = <CoachingTab store={store} goDay={(i) => { setSelDay(i); setTab('training'); }} />;
   else screen = <DoelenTab store={store} email={session?.user.email ?? null} onSignOut={session ? doSignOut : undefined} logWeight={logWeight} setWeightGoal={setWeightGoal} setStrengthGoals={setStrengthGoals} onImport={replaceStore} />;

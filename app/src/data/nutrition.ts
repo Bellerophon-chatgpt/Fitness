@@ -1,4 +1,4 @@
-import type { FoodItem, Macros, MealId, NutritionDay, RecentFood } from '../types';
+import type { FoodItem, Macros, MealId, NutritionDay, Nutrients, RecentFood } from '../types';
 
 export const MEALS: [MealId, string][] = [
   ['breakfast', 'Ontbijt'],
@@ -23,6 +23,7 @@ export interface FoodCandidate {
   name: string;
   brand?: string;
   per100: Macros;
+  micros?: Nutrients;
   unit: 'g' | 'ml';
   defaultAmount: number;
   barcode?: string;
@@ -87,6 +88,7 @@ export function pushRecent(list: RecentFood[] | undefined, item: FoodItem): Rece
     name: item.name,
     brand: item.brand,
     per100: item.per100,
+    micros: item.micros,
     unit: item.unit,
     defaultAmount: item.amount,
     barcode: item.barcode,
@@ -101,6 +103,7 @@ export function recentToCandidate(r: RecentFood): FoodCandidate {
     name: r.name,
     brand: r.brand,
     per100: r.per100,
+    micros: r.micros,
     unit: r.unit,
     defaultAmount: r.defaultAmount,
     barcode: r.barcode,
@@ -158,6 +161,38 @@ export function dayTotal(day: NutritionDay): Macros {
   return sumMacros([mealTotal(day.breakfast), mealTotal(day.lunch), mealTotal(day.dinner), mealTotal(day.snacks)]);
 }
 
+// extra nutrients for one logged item, scaled to its amount
+export function itemMicros(it: FoodItem): Nutrients {
+  const f = it.amount / 100;
+  const m = it.micros;
+  if (!m) return {};
+  const out: Nutrients = {};
+  if (m.fiber != null) out.fiber = r1(m.fiber * f);
+  if (m.sugar != null) out.sugar = r1(m.sugar * f);
+  if (m.satfat != null) out.satfat = r1(m.satfat * f);
+  if (m.salt != null) out.salt = Math.round(m.salt * f * 100) / 100;
+  return out;
+}
+
+// day totals for the extra nutrients (always returns all four keys)
+export function dayMicros(day: NutritionDay): Required<Nutrients> {
+  const all = [day.breakfast, day.lunch, day.dinner, day.snacks].flat();
+  const t = { fiber: 0, sugar: 0, satfat: 0, salt: 0 };
+  for (const it of all) {
+    const m = itemMicros(it);
+    t.fiber += m.fiber || 0;
+    t.sugar += m.sugar || 0;
+    t.satfat += m.satfat || 0;
+    t.salt += m.salt || 0;
+  }
+  return { fiber: r1(t.fiber), sugar: r1(t.sugar), satfat: r1(t.satfat), salt: Math.round(t.salt * 100) / 100 };
+}
+
+// true if any logged food in the day carries extra-nutrient data
+export function hasMicros(day: NutritionDay): boolean {
+  return [day.breakfast, day.lunch, day.dinner, day.snacks].flat().some((it) => it.micros);
+}
+
 // --- Open Food Facts (free, no API key) -------------------------------------
 // Reads don't require auth. Both hits and misses return HTTP 200 — the real
 // success flag lives in the body as `status === 1`.
@@ -188,12 +223,26 @@ function mapProduct(p: OffProduct, barcode?: string): FoodCandidate | null {
   const fat = num(n['fat_100g']);
   // reject products with no usable nutrition data at all
   if (!kcal && !carbs && !protein && !fat) return null;
+
+  const micros: Nutrients = {};
+  const fiber = num(n['fiber_100g']);
+  if (fiber) micros.fiber = fiber;
+  const sugar = num(n['sugars_100g']);
+  if (sugar) micros.sugar = sugar;
+  const satfat = num(n['saturated-fat_100g']);
+  if (satfat) micros.satfat = satfat;
+  let salt = num(n['salt_100g']);
+  if (!salt && n['sodium_100g']) salt = num(n['sodium_100g']) * 2.5; // sodium → salt
+  if (salt) micros.salt = Math.round(salt * 100) / 100;
+  const hasMicros = Object.keys(micros).length > 0;
+
   const name = (p.product_name_nl || p.product_name || '').trim() || 'Onbekend product';
   const serving = num(p.serving_quantity);
   return {
     name,
     brand: (p.brands || '').split(',')[0]?.trim() || undefined,
     per100: { kcal, carbs, protein, fat },
+    micros: hasMicros ? micros : undefined,
     unit: 'g',
     defaultAmount: serving > 0 ? Math.round(serving) : 100,
     barcode: barcode || p.code,

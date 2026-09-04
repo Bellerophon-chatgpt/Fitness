@@ -5,7 +5,7 @@
   --ff-line: #26262b; --ff-line-soft: #1d1d21;
   --ff-amber: #efa320; --ff-amber-dim: #b9852a;
   --ff-text: #f3f3f4; --ff-muted: #adadb4; --ff-faint: #82828a; --ff-good: #5bbf7a;
-  --ff-carb: #4a9de0; --ff-protein: #e85d9c; --ff-fat: #efa320;
+  --ff-carb: #4a9de0; --ff-protein: #e85d9c; --ff-fat: #efa320; --ff-water: #38b6d6;
   --ff-chrome: rgba(10, 10, 11, .95); --ff-scrim: rgba(8, 8, 9, .97);
   --ff-sans: 'Space Grotesk', system-ui, sans-serif;
   --ff-mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -18,7 +18,7 @@
   --ff-line: #e2ded4; --ff-line-soft: #ece8df;
   --ff-amber: #d98a0a; --ff-amber-dim: #b0750f;
   --ff-text: #20201e; --ff-muted: #6b6862; --ff-faint: #9d9a90; --ff-good: #3f9d5e;
-  --ff-carb: #2f7fc0; --ff-protein: #d6417f; --ff-fat: #d98a0a;
+  --ff-carb: #2f7fc0; --ff-protein: #d6417f; --ff-fat: #d98a0a; --ff-water: #1f96c0;
   --ff-chrome: rgba(255, 255, 255, .92); --ff-scrim: rgba(244, 242, 236, .96);
   color-scheme: light;
 }
@@ -373,3 +373,12 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--ff-bg); }
 .ff-weekdot.today span { color: var(--ff-amber); }
 .ff-weekdot.today i { box-shadow: 0 0 0 2px var(--ff-amber-dim); }
 .ff-weekdots-cap { font-family: var(--ff-mono); font-size: 10px; letter-spacing: .06em; color: var(--ff-faint); text-transform: uppercase; margin-top: 12px; text-align: center; }
+
+/* water widget (Voeding) */
+.ff-water { background: var(--ff-card); border: 1px solid var(--ff-line); border-radius: 14px; padding: 12px 14px; margin-top: 12px; }
+.ff-water-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 10px; }
+.ff-water-val { font-family: var(--ff-mono); font-size: 13px; color: var(--ff-muted); }
+.ff-water-val b { color: var(--ff-text); font-size: 16px; }
+.ff-water-btns { display: flex; gap: 6px; }
+.ff-water-btns button { border: 1px solid var(--ff-line); background: transparent; color: var(--ff-water); font-family: var(--ff-mono); font-size: 12px; font-weight: 700; border-radius: 9px; padding: 7px 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ff-water-btns button:active { background: var(--ff-card-2); }
