@@ -95,4 +95,9 @@ export const Ic = {
       <path d="M5 15V5a2 2 0 012-2h8" />
     </svg>
   ),
+  drop: (s = 15, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill={c} stroke="none">
+      <path d="M12 3s6 6.5 6 11a6 6 0 01-12 0c0-4.5 6-11 6-11z" />
+    </svg>
+  ),
 };

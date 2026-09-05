@@ -91,9 +91,14 @@ export function FoodPicker({
     setStep('browse');
     const clean = code.replace(/\D/g, '');
 
-    // 1) instant hit from foods you've logged before (works offline)
+    // 1) instant hit from foods you've logged before — but only short-circuit
+    // when it already carries extra nutrients (or we're offline). Otherwise fall
+    // through to a fresh lookup so older entries get enriched with micros.
     const r = recents.find((x) => x.barcode && x.barcode.replace(/\D/g, '') === clean);
-    if (r) { openDetail(recentToCandidate(r)); return; }
+    if (r && (r.micros || (typeof navigator !== 'undefined' && navigator.onLine === false))) {
+      openDetail(recentToCandidate(r));
+      return;
+    }
 
     // 2) cache + Open Food Facts
     setLooking(true);

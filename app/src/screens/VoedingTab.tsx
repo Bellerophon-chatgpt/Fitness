@@ -97,24 +97,25 @@ export function VoedingTab({
             </div>
           </div>
 
+          <div className="ff-remain-cap">{total.kcal <= goals.kcal ? 'Nog te gaan vandaag' : 'Boven je dagdoel'}</div>
           <div className="ff-remain">
             <RemainCell label="kcal" value={goals.kcal - total.kcal} color="var(--ff-amber)" />
             <RemainCell label="koolh." unit="g" value={goals.carbs - total.carbs} color="var(--ff-carb)" />
             <RemainCell label="eiwit" unit="g" value={goals.protein - total.protein} color="var(--ff-protein)" />
             <RemainCell label="vet" unit="g" value={goals.fat - total.fat} color="var(--ff-fat)" />
           </div>
-          <div className="ff-remain-cap">{total.kcal <= goals.kcal ? 'Nog te gaan vandaag' : 'Boven je dagdoel'}</div>
 
           <div className="ff-water">
-            <div className="ff-water-head">
-              <div className="ff-water-val"><b>{store.water?.[dk] ?? 0}</b> / {WATER_GOAL} ml water</div>
-              <div className="ff-water-btns">
-                <button onClick={() => addWater(dk, -250)} aria-label="Minder water">−</button>
-                <button onClick={() => addWater(dk, 250)}>+250</button>
-                <button onClick={() => addWater(dk, 500)}>+500</button>
-              </div>
+            <div className="ff-water-top">
+              <div className="ff-water-amt">{Ic.drop(15, 'var(--ff-water)')} <b>{store.water?.[dk] ?? 0}</b><span> / {WATER_GOAL} ml</span></div>
+              {(store.water?.[dk] ?? 0) >= WATER_GOAL && <div className="ff-water-done">Doel gehaald</div>}
             </div>
-            <div className="ff-progress"><i style={{ width: Math.min(100, ((store.water?.[dk] ?? 0) / WATER_GOAL) * 100) + '%', background: 'var(--ff-water)' }} /></div>
+            <div className="ff-progress" style={{ margin: '10px 0' }}><i style={{ width: Math.min(100, ((store.water?.[dk] ?? 0) / WATER_GOAL) * 100) + '%', background: 'var(--ff-water)' }} /></div>
+            <div className="ff-water-btns">
+              <button onClick={() => addWater(dk, -250)} aria-label="Minder water">−250</button>
+              <button onClick={() => addWater(dk, 250)}>+250 ml</button>
+              <button onClick={() => addWater(dk, 500)}>+500 ml</button>
+            </div>
           </div>
 
           {dayEmpty && prevHasFood && (

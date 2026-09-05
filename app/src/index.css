@@ -187,10 +187,10 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--ff-bg); }
 .ff-nsum { display: flex; align-items: center; gap: 16px; background: var(--ff-card); border: 1px solid var(--ff-line); border-radius: 16px; padding: 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .ff-nsum:active { border-color: var(--ff-amber-dim); }
 .ff-nsum-legend { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
-.ff-mbar-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
-.ff-mbar-top span:first-child { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
-.ff-mbar-top i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
-.ff-mbar-top .v { font-family: var(--ff-mono); font-size: 12px; color: var(--ff-muted); }
+.ff-mbar-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.ff-mbar-top span:first-child { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 7px; min-width: 0; white-space: nowrap; }
+.ff-mbar-top i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+.ff-mbar-top .v { font-family: var(--ff-mono); font-size: 12px; color: var(--ff-muted); white-space: nowrap; flex-shrink: 0; }
 .ff-mbar-top .v b { color: var(--ff-text); }
 
 /* meal block */
@@ -344,7 +344,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--ff-bg); }
 .ff-remain-cell { flex: 1; background: var(--ff-card); border: 1px solid var(--ff-line); border-radius: 12px; padding: 10px 4px; text-align: center; }
 .ff-remain-cell .v { font-family: var(--ff-mono); font-size: 17px; font-weight: 700; line-height: 1; }
 .ff-remain-cell .l { font-family: var(--ff-mono); font-size: 9px; letter-spacing: .04em; color: var(--ff-muted); text-transform: uppercase; margin-top: 4px; }
-.ff-remain-cap { font-family: var(--ff-mono); font-size: 10px; letter-spacing: .1em; color: var(--ff-faint); text-transform: uppercase; margin: 8px 0 0 2px; }
+.ff-remain-cap { font-family: var(--ff-mono); font-size: 11px; letter-spacing: .1em; color: var(--ff-muted); text-transform: uppercase; margin: 14px 0 8px 2px; }
 
 /* data export/import (Doelen) */
 .ff-data-row { display: flex; gap: 10px; }
@@ -375,10 +375,12 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--ff-bg); }
 .ff-weekdots-cap { font-family: var(--ff-mono); font-size: 10px; letter-spacing: .06em; color: var(--ff-faint); text-transform: uppercase; margin-top: 12px; text-align: center; }
 
 /* water widget (Voeding) */
-.ff-water { background: var(--ff-card); border: 1px solid var(--ff-line); border-radius: 14px; padding: 12px 14px; margin-top: 12px; }
-.ff-water-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 10px; }
-.ff-water-val { font-family: var(--ff-mono); font-size: 13px; color: var(--ff-muted); }
-.ff-water-val b { color: var(--ff-text); font-size: 16px; }
-.ff-water-btns { display: flex; gap: 6px; }
-.ff-water-btns button { border: 1px solid var(--ff-line); background: transparent; color: var(--ff-water); font-family: var(--ff-mono); font-size: 12px; font-weight: 700; border-radius: 9px; padding: 7px 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ff-water { background: var(--ff-card); border: 1px solid var(--ff-line); border-radius: 14px; padding: 14px; margin-top: 12px; }
+.ff-water-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ff-water-amt { display: flex; align-items: center; gap: 7px; font-family: var(--ff-mono); font-size: 13px; color: var(--ff-muted); white-space: nowrap; }
+.ff-water-amt b { color: var(--ff-text); font-size: 20px; line-height: 1; }
+.ff-water-amt svg { flex-shrink: 0; }
+.ff-water-done { font-family: var(--ff-mono); font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ff-water); white-space: nowrap; }
+.ff-water-btns { display: flex; gap: 8px; }
+.ff-water-btns button { flex: 1; border: 1px solid var(--ff-line); background: transparent; color: var(--ff-water); font-family: var(--ff-mono); font-size: 12px; font-weight: 700; border-radius: 10px; padding: 10px 4px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .ff-water-btns button:active { background: var(--ff-card-2); }

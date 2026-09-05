@@ -255,7 +255,7 @@ export type LookupResult =
   | { status: 'offline' };
 
 // Local cache of barcode → product, so rescanning is instant and works offline.
-const CACHE_KEY = 'ff_off_cache_v1';
+const CACHE_KEY = 'ff_off_cache_v2';
 const CACHE_TTL = 60 * 864e5; // ~60 days
 const CACHE_MAX = 300;
 
