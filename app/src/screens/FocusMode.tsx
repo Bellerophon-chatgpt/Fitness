@@ -2,26 +2,28 @@ import { useEffect, useState } from 'react';
 import { Ic } from '../components/Icons';
 import { EditNum } from '../components/EditNum';
 import { ping, buzz } from '../utils/feedback';
-import type { SetEntry, Store } from '../types';
+import { bestE1RM, bestE1RMHistory, epley1RM } from '../data/workout';
+import type { Exercise, SetEntry, WorkoutSession } from '../types';
 
 const REST_SECONDS = 90;
 
 export function FocusMode({
-  store,
-  day,
+  exs,
   exIdx,
+  workoutLog,
   updateSet,
   onClose,
   onNav,
+  onFinish,
 }: {
-  store: Store;
-  day: number;
+  exs: Exercise[];
   exIdx: number;
-  updateSet: (day: number, ei: number, si: number, patch: Partial<SetEntry>) => void;
+  workoutLog?: WorkoutSession[];
+  updateSet: (ei: number, si: number, patch: Partial<SetEntry>) => void;
   onClose: () => void;
   onNav: (dir: 1 | -1) => void;
+  onFinish: () => void;
 }) {
-  const exs = store.days[day]!.ex;
   const ex = exs[exIdx];
   const [resting, setResting] = useState(false);
   const [t, setT] = useState(REST_SECONDS);
@@ -45,10 +47,16 @@ export function FocusMode({
   const idx = allDone ? ex.sets.length - 1 : cur;
   const setObj = ex.sets[idx];
 
+  // history-based context for this exercise
+  const priorBest = bestE1RMHistory(workoutLog, ex.name);
+  const liveBest = bestE1RM(ex.sets.filter((s) => s.done).map((s) => ({ weight: s.weight, reps: s.reps })));
+  const curE1RM = epley1RM(setObj.weight, setObj.reps);
+  const isPR = liveBest > priorBest + 0.01 && priorBest > 0;
+
   const bump = (field: 'weight' | 'reps', delta: number, min = 0) =>
-    updateSet(day, exIdx, idx, { [field]: Math.max(min, Math.round((setObj[field] + delta) * 10) / 10) });
+    updateSet(exIdx, idx, { [field]: Math.max(min, Math.round((setObj[field] + delta) * 10) / 10) });
   const finishSet = () => {
-    updateSet(day, exIdx, cur, { done: true });
+    updateSet(exIdx, cur, { done: true });
     if (cur < ex.sets.length - 1) {
       setT(REST_SECONDS);
       setResting(true);
@@ -69,13 +77,13 @@ export function FocusMode({
           <div className="ff-h1" style={{ fontSize: 30 }}>{ex.name}</div>
           <div style={{ marginTop: 7, fontFamily: 'var(--ff-mono)', fontSize: 12, color: 'var(--ff-muted)', letterSpacing: '.02em' }}>
             {setObj.last ? (
-              <>
-                vorige keer · <b style={{ color: 'var(--ff-text)' }}>{setObj.last.weight} kg × {setObj.last.reps}</b>
-              </>
+              <>vorige keer · <b style={{ color: 'var(--ff-text)' }}>{setObj.last.weight} kg × {setObj.last.reps}</b></>
             ) : (
               'nieuwe oefening'
             )}
+            {priorBest > 0 && <> · beste ~{Math.round(priorBest)} kg</>}
           </div>
+          {isPR && <div className="ff-pr">Nieuw PR — ~{Math.round(liveBest)} kg 1RM</div>}
           <div style={{ marginTop: 9, display: 'flex', justifyContent: 'center' }}>
             <div className="ff-dots">
               {ex.sets.map((s, i) => (
@@ -97,17 +105,17 @@ export function FocusMode({
             <div className="ff-sublabel" style={{ marginBottom: 8 }}>Gewicht · set {idx + 1}</div>
             <div className="ff-stepper" style={{ marginBottom: 16 }}>
               <button className="ff-step-btn" onClick={() => bump('weight', -2.5)}>−</button>
-              <EditNum value={setObj.weight} unit="KG" onCommit={(v) => updateSet(day, exIdx, idx, { weight: v })} />
+              <EditNum value={setObj.weight} unit="KG" onCommit={(v) => updateSet(exIdx, idx, { weight: v })} />
               <button className="ff-step-btn" onClick={() => bump('weight', 2.5)}>+</button>
             </div>
             <div className="ff-sublabel" style={{ marginBottom: 8 }}>Herhalingen</div>
             <div className="ff-stepper">
               <button className="ff-step-btn" onClick={() => bump('reps', -1)}>−</button>
-              <EditNum value={setObj.reps} unit="REPS" round onCommit={(v) => updateSet(day, exIdx, idx, { reps: v })} />
+              <EditNum value={setObj.reps} unit="REPS" round onCommit={(v) => updateSet(exIdx, idx, { reps: v })} />
               <button className="ff-step-btn" onClick={() => bump('reps', 1)}>+</button>
             </div>
             <div style={{ marginTop: 12, textAlign: 'center', fontFamily: 'var(--ff-mono)', fontSize: 11, color: 'var(--ff-faint)', letterSpacing: '.04em' }}>
-              tik het getal om te typen
+              ~{Math.round(curE1RM)} kg geschat 1RM · tik het getal om te typen
             </div>
           </div>
         )}
@@ -115,7 +123,7 @@ export function FocusMode({
         <div style={{ flex: 1, minHeight: 16 }} />
 
         {allDone ? (
-          <button className="ff-btn ff-btn-primary" onClick={() => (hasNext ? onNav(1) : onClose())}>
+          <button className="ff-btn ff-btn-primary" onClick={() => (hasNext ? onNav(1) : onFinish())}>
             {hasNext ? 'Volgende oefening →' : 'Training afronden ✓'}
           </button>
         ) : (

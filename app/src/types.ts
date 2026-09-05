@@ -16,6 +16,37 @@ export interface DaySchema {
   ex: Exercise[];
 }
 
+// --- Workout logging (dated history, separate from the routine templates) ---
+
+export interface LoggedSet {
+  weight: number;
+  reps: number;
+}
+
+export interface LoggedExercise {
+  name: string;
+  sets: LoggedSet[];
+}
+
+export interface WorkoutSession {
+  id: string;
+  date: string; // YYYY-MM-DD
+  weekday: number;
+  title?: string;
+  exercises: LoggedExercise[];
+  volume: number; // total kg × reps
+}
+
+// The session currently being performed — a working copy, separate from the
+// template, so check-offs and weights don't mutate the routine.
+export interface LiveWorkout {
+  startedAt: number; // epoch ms
+  weekday: number;
+  title?: string;
+  tag?: string;
+  ex: Exercise[];
+}
+
 export type Days = Partial<Record<number, DaySchema>>;
 
 // A completed training session, stamped with its actual date.
@@ -115,10 +146,12 @@ export interface Store {
   goalRate?: number; // kg per week, signed (− lose, + gain, 0 maintain)
   sessions?: SessionLog[];
   water?: Record<string, number>; // date (YYYY-MM-DD) → ml
+  workoutLog?: WorkoutSession[];
+  liveWorkout?: LiveWorkout;
 }
 
 export type OverlayState =
-  | { type: 'focus'; day: number; exIdx: number }
+  | { type: 'focus'; exIdx: number }
   | { type: 'add'; day: number }
   | null;
 

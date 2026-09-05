@@ -16,6 +16,7 @@ import { dateKey, emptyDay, hasFood, newId, pushRecent, shiftKey } from './data/
 import { authEnabled, getSession, onAuthChange, signOut } from './data/auth';
 import { AuthGate } from './screens/AuthGate';
 import type { Session } from '@supabase/supabase-js';
+import { buildLiveWorkout, liveToSession, newPRs } from './data/workout';
 import type { FoodItem, Macros, MealId, OverlayState, Profile, SetEntry, StrengthGoal, Store, TabId, Theme } from './types';
 
 function readTheme(): Theme {
@@ -112,15 +113,6 @@ export default function App() {
       }),
     [],
   );
-
-  const toggleSet = (day: number, ei: number, si: number) =>
-    update((n) => {
-      const s = n.days[day]!.ex[ei].sets[si];
-      s.done = !s.done;
-    });
-
-  const updateSet = (day: number, ei: number, si: number, patch: Partial<SetEntry>) =>
-    update((n) => Object.assign(n.days[day]!.ex[ei].sets[si], patch));
 
   const addExercise = (day: number, name: string) => {
     update((n) => {
@@ -258,14 +250,58 @@ export default function App() {
     setSkipAuth(false);
   };
 
-  const openFocus = (day: number, exIdx: number) => setOverlay({ type: 'focus', day, exIdx });
+  const openFocus = (exIdx: number) => setOverlay({ type: 'focus', exIdx });
   const openAdd = (day: number) => setOverlay({ type: 'add', day });
   const navFocus = (dir: 1 | -1) =>
     setOverlay((o) => {
       if (!o || o.type !== 'focus') return o;
-      const exs = store.days[o.day]!.ex;
+      const exs = storeRef.current.liveWorkout?.ex ?? [];
       return { ...o, exIdx: Math.max(0, Math.min(exs.length - 1, o.exIdx + dir)) };
     });
+
+  // --- live workout ---
+  const startWorkout = () => {
+    update((n) => {
+      const routine = n.days[TODAY];
+      if (!routine || routine.ex.length === 0) return;
+      n.liveWorkout = buildLiveWorkout(routine, TODAY, n.workoutLog);
+    });
+  };
+
+  const toggleLiveSet = (ei: number, si: number) =>
+    update((n) => {
+      const s = n.liveWorkout?.ex[ei]?.sets[si];
+      if (s) s.done = !s.done;
+    });
+
+  const updateLiveSet = (ei: number, si: number, patch: Partial<SetEntry>) =>
+    update((n) => {
+      const s = n.liveWorkout?.ex[ei]?.sets[si];
+      if (s) Object.assign(s, patch);
+    });
+
+  const finishWorkout = () => {
+    let prs: string[] = [];
+    let saved = false;
+    update((n) => {
+      if (!n.liveWorkout) return;
+      const date = dateKey(new Date());
+      const session = liveToSession(n.liveWorkout, date, newId());
+      if (session.exercises.length > 0) {
+        prs = newPRs(n.workoutLog, session);
+        n.workoutLog = [...(n.workoutLog ?? []), session];
+        const list = n.sessions ?? [];
+        const totalSets = session.exercises.reduce((a, e) => a + e.sets.length, 0);
+        n.sessions = [...list.filter((s) => s.date !== date), { date, weekday: session.weekday, title: session.title, sets: totalSets }];
+        saved = true;
+      }
+      n.liveWorkout = undefined;
+    });
+    if (saved) flash(prs.length ? `Opgeslagen · PR: ${prs.join(', ')}!` : 'Training opgeslagen');
+    else flash('Geen sets afgevinkt');
+  };
+
+  const discardWorkout = () => update((n) => { n.liveWorkout = undefined; });
 
   // keep screen awake while a workout (focus mode) is open
   useEffect(() => {
@@ -318,7 +354,7 @@ export default function App() {
   }
 
   let screen;
-  if (tab === 'training') screen = <TrainingTab store={store} selDay={selDay} setSelDay={setSelDay} toggleSet={toggleSet} openFocus={openFocus} openAdd={openAdd} toggleSession={toggleSessionToday} />;
+  if (tab === 'training') screen = <TrainingTab store={store} selDay={selDay} setSelDay={setSelDay} openFocus={openFocus} openAdd={openAdd} toggleSession={toggleSessionToday} startWorkout={startWorkout} toggleLiveSet={toggleLiveSet} finishWorkout={finishWorkout} discardWorkout={discardWorkout} />;
   else if (tab === 'voeding') screen = <VoedingTab store={store} addFood={addFood} updateAmount={updateFoodAmount} removeFood={removeFood} saveGoalConfig={saveGoalConfig} copyPreviousDay={copyPreviousDay} addWater={addWater} />;
   else if (tab === 'schema') screen = <SchemaTab store={store} selDay={selDay} setSelDay={setSelDay} setExerciseSets={setExerciseSets} removeExercise={removeExercise} moveExercise={moveExercise} openAdd={openAdd} />;
   else if (tab === 'coaching') screen = <CoachingTab store={store} goDay={(i) => { setSelDay(i); setTab('training'); }} />;
@@ -331,8 +367,16 @@ export default function App() {
           <div style={{ flex: 1, minHeight: 0 }}>{screen}</div>
           <TabBar active={tab} onChange={setTab} />
 
-          {overlay?.type === 'focus' && store.days[overlay.day] && (
-            <FocusMode store={store} day={overlay.day} exIdx={overlay.exIdx} updateSet={updateSet} onClose={() => setOverlay(null)} onNav={navFocus} />
+          {overlay?.type === 'focus' && store.liveWorkout && store.liveWorkout.ex[overlay.exIdx] && (
+              <FocusMode
+                exs={store.liveWorkout.ex}
+                exIdx={overlay.exIdx}
+                workoutLog={store.workoutLog}
+                updateSet={updateLiveSet}
+                onClose={() => setOverlay(null)}
+                onNav={navFocus}
+                onFinish={() => { finishWorkout(); setOverlay(null); }}
+              />
           )}
           {overlay?.type === 'add' && <AddPicker store={store} day={overlay.day} addExercise={addExercise} onClose={() => setOverlay(null)} />}
           {toast && <Toast message={toast} />}

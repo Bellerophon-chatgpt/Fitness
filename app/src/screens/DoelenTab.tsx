@@ -9,13 +9,19 @@ import { Ic } from '../components/Icons';
 import { dateKey, dayTotal, hasFood, newId, ZERO } from '../data/nutrition';
 import { activeGoals } from '../data/goals';
 import { currentWeekDots, daysSinceLastSession, sessionsThisMonth, weekStreak } from '../data/training';
-import { DAYS_SHORT, TODAY } from '../data/constants';
+import { DAYS_SHORT, MONTHS, TODAY } from '../data/constants';
 import type { Macros, StrengthGoal, Store } from '../types';
 
 const DEFAULT_STRENGTH: StrengthGoal[] = [
   { id: 'bench', name: 'Bench Press · 1RM', cur: 72, target: 80, unit: 'kg' },
   { id: 'squat', name: 'Squat · 1RM', cur: 96, target: 120, unit: 'kg' },
 ];
+
+function fmtWDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return `${DAYS_SHORT[(dt.getDay() + 6) % 7].toLowerCase()} ${d} ${MONTHS[m - 1]}`;
+}
 
 // average the last 7 days' macros over the days that actually have a food log
 function weeklyAverage(store: Store): { avg: Macros; loggedDays: number } {
@@ -144,6 +150,22 @@ export function DoelenTab({
         </div>
 
         <div className="ff-scroll">
+          {(store.workoutLog?.length ?? 0) > 0 && (
+            <>
+              <div className="ff-sublabel" style={{ marginBottom: 10 }}>Laatste trainingen</div>
+              {[...(store.workoutLog ?? [])].slice(-5).reverse().map((w) => (
+                <div key={w.id} className="ff-wsession">
+                  <div style={{ minWidth: 0 }}>
+                    <div className="ff-wsession-title">{w.title || 'Training'}</div>
+                    <div className="ff-wsession-sub">{fmtWDate(w.date)} · {w.exercises.length} oefening{w.exercises.length !== 1 ? 'en' : ''}</div>
+                  </div>
+                  <div className="ff-wsession-vol"><b>{Math.round(w.volume).toLocaleString('nl-NL')}</b><span>kg volume</span></div>
+                </div>
+              ))}
+              <div style={{ height: 18 }} />
+            </>
+          )}
+
           {/* bodyweight */}
           <div className="ff-sublabel" style={{ marginBottom: 10 }}>Gewicht</div>
           <div className="ff-weight">

@@ -384,3 +384,22 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--ff-bg); }
 .ff-water-btns { display: flex; gap: 8px; }
 .ff-water-btns button { flex: 1; border: 1px solid var(--ff-line); background: transparent; color: var(--ff-water); font-family: var(--ff-mono); font-size: 12px; font-weight: 700; border-radius: 10px; padding: 10px 4px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .ff-water-btns button:active { background: var(--ff-card-2); }
+
+/* training: routine preview + live workout extras */
+.ff-prev { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--ff-card); border: 1px solid var(--ff-line); border-radius: 12px; padding: 12px 14px; }
+.ff-prev + .ff-prev { margin-top: 7px; }
+.ff-prev-name { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ff-prev-meta { font-family: var(--ff-mono); font-size: 11px; color: var(--ff-muted); white-space: nowrap; flex-shrink: 0; }
+.ff-hint-line { font-family: var(--ff-mono); font-size: 11px; color: var(--ff-faint); letter-spacing: .02em; margin-top: 10px; text-align: center; }
+.ff-link-btn { width: 100%; background: none; border: none; color: var(--ff-muted); font-family: var(--ff-mono); font-size: 12px; letter-spacing: .04em; text-decoration: underline; cursor: pointer; -webkit-tap-highlight-color: transparent; margin-top: 12px; padding: 8px; }
+.ff-link-btn:active { color: #e0664a; }
+.ff-pr { display: inline-block; margin-top: 8px; padding: 4px 12px; border-radius: 99px; background: var(--ff-amber); color: #1a1304; font-family: var(--ff-mono); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+
+/* recent workout sessions (Doelen) */
+.ff-wsession { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--ff-card); border: 1px solid var(--ff-line); border-radius: 12px; padding: 12px 14px; }
+.ff-wsession + .ff-wsession { margin-top: 7px; }
+.ff-wsession-title { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ff-wsession-sub { font-family: var(--ff-mono); font-size: 11px; color: var(--ff-muted); margin-top: 3px; }
+.ff-wsession-vol { text-align: right; flex-shrink: 0; font-family: var(--ff-mono); }
+.ff-wsession-vol b { font-size: 15px; color: var(--ff-text); }
+.ff-wsession-vol span { display: block; font-size: 9px; letter-spacing: .04em; color: var(--ff-faint); text-transform: uppercase; margin-top: 2px; }
