@@ -9,6 +9,8 @@ import { Ic } from '../components/Icons';
 import { dateKey, dayTotal, hasFood, newId, ZERO } from '../data/nutrition';
 import { activeGoals } from '../data/goals';
 import { currentWeekDots, daysSinceLastSession, sessionsThisMonth, weekStreak } from '../data/training';
+import { bestE1RMHistory } from '../data/workout';
+import { ExerciseProgress } from './ExerciseProgress';
 import { DAYS_SHORT, MONTHS, TODAY } from '../data/constants';
 import type { Macros, StrengthGoal, Store } from '../types';
 
@@ -85,7 +87,21 @@ export function DoelenTab({
   // strength goals (editable)
   const strength = store.strengthGoals ?? DEFAULT_STRENGTH;
   const [editSg, setEditSg] = useState<StrengthGoal | 'new' | null>(null);
+  const [progEx, setProgEx] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // exercises that have logged history, most-recent first, with best e1RM
+  const exStats = (() => {
+    const order: string[] = [];
+    const seen = new Set<string>();
+    for (let i = (store.workoutLog?.length ?? 0) - 1; i >= 0; i--) {
+      for (const e of store.workoutLog![i].exercises) {
+        const k = e.name.toLowerCase();
+        if (!seen.has(k)) { seen.add(k); order.push(e.name); }
+      }
+    }
+    return order.map((n) => ({ name: n, best: Math.round(bestE1RMHistory(store.workoutLog, n)) }));
+  })();
 
   const exportBackup = () => {
     const blob = new Blob([JSON.stringify(store, null, 2)], { type: 'application/json' });
@@ -126,6 +142,7 @@ export function DoelenTab({
     <div className="ff">
       <div className="ff-body">
         <TopBar />
+        <div className="ff-scroll">
         <div style={{ marginBottom: 16 }}>
           <div className="ff-label">Doelen</div>
           <div className="ff-h1" style={{ fontSize: 22 }}>Voortgang</div>
@@ -149,7 +166,6 @@ export function DoelenTab({
           </div>
         </div>
 
-        <div className="ff-scroll">
           {(store.workoutLog?.length ?? 0) > 0 && (
             <>
               <div className="ff-sublabel" style={{ marginBottom: 10 }}>Laatste trainingen</div>
@@ -160,6 +176,19 @@ export function DoelenTab({
                     <div className="ff-wsession-sub">{fmtWDate(w.date)} · {w.exercises.length} oefening{w.exercises.length !== 1 ? 'en' : ''}</div>
                   </div>
                   <div className="ff-wsession-vol"><b>{Math.round(w.volume).toLocaleString('nl-NL')}</b><span>kg volume</span></div>
+                </div>
+              ))}
+              <div style={{ height: 18 }} />
+            </>
+          )}
+
+          {exStats.length > 0 && (
+            <>
+              <div className="ff-sublabel" style={{ marginBottom: 10 }}>Oefeningen · voortgang</div>
+              {exStats.map((e) => (
+                <div key={e.name} className="ff-prev ff-goal-tap" onClick={() => setProgEx(e.name)}>
+                  <div className="ff-prev-name">{e.name}</div>
+                  <div className="ff-prev-meta">~{e.best} kg 1RM {Ic.chev(14)}</div>
                 </div>
               ))}
               <div style={{ height: 18 }} />
@@ -281,6 +310,8 @@ export function DoelenTab({
           onClose={() => setEditSg(null)}
         />
       )}
+
+      {progEx && <ExerciseProgress name={progEx} workoutLog={store.workoutLog} onClose={() => setProgEx(null)} />}
     </div>
   );
 }
