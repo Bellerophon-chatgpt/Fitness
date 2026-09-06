@@ -125,6 +125,13 @@ export default function App() {
     flash(name + ' toegevoegd');
   };
 
+  const registerExercise = (def: import('./types').ExerciseDef) =>
+    update((n) => {
+      const k = def.name.trim().toLowerCase();
+      const list = n.customExercises ?? [];
+      if (!list.some((d) => d.name.trim().toLowerCase() === k)) n.customExercises = [...list, def];
+    });
+
   const removeExercise = (day: number, ei: number) =>
     update((n) => {
       n.days[day]!.ex.splice(ei, 1);
@@ -378,7 +385,7 @@ export default function App() {
                 onFinish={() => { finishWorkout(); setOverlay(null); }}
               />
           )}
-          {overlay?.type === 'add' && <AddPicker store={store} day={overlay.day} addExercise={addExercise} onClose={() => setOverlay(null)} />}
+          {overlay?.type === 'add' && <AddPicker store={store} day={overlay.day} addExercise={addExercise} registerExercise={registerExercise} onClose={() => setOverlay(null)} />}
           {toast && <Toast message={toast} />}
         </div>
       </ThemeCtx.Provider>

@@ -52,6 +52,8 @@ The **Schema** tab holds your routine per weekday (a template: exercises + plann
 
 A rest day (no routine) still offers a quick "markeer als afgerond" stamp. This split (routine template ↔ dated session log) is what enables real history and progression, rather than checkboxes on a recurring schedule.
 
+Exercises come from a **built-in library** grouped by muscle (filterable in the add screen); you can also create custom exercises (name + muscle), which are stored and synced. Names already used in your routines/history show up in the picker too, so nothing gets lost. Canonical naming keeps an exercise's history from fragmenting across spellings, and the Doelen tab shows per-exercise progression (estimated 1RM / volume / top weight over time) with the muscle group.
+
 ## Voeding / macro-tracking
 
 The **Voeding** tab logs food per day, split across Ontbijt, Lunch, Diner and Snacks, and tracks carbohydrate, protein and fat (plus calories) against editable daily goals. A day's totals are shown as a macro ring; tap it to set your goals.

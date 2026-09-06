@@ -49,6 +49,16 @@ export interface LiveWorkout {
 
 export type Days = Partial<Record<number, DaySchema>>;
 
+// --- Canonical exercise library ---
+export type Muscle = 'chest' | 'back' | 'legs' | 'shoulders' | 'arms' | 'core' | 'other';
+
+export interface ExerciseDef {
+  id: string;
+  name: string;
+  muscle: Muscle;
+  custom?: boolean;
+}
+
 // A completed training session, stamped with its actual date.
 export interface SessionLog {
   date: string; // YYYY-MM-DD
@@ -148,6 +158,7 @@ export interface Store {
   water?: Record<string, number>; // date (YYYY-MM-DD) → ml
   workoutLog?: WorkoutSession[];
   liveWorkout?: LiveWorkout;
+  customExercises?: ExerciseDef[];
 }
 
 export type OverlayState =

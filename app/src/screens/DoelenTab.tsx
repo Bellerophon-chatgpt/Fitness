@@ -10,6 +10,7 @@ import { dateKey, dayTotal, hasFood, newId, ZERO } from '../data/nutrition';
 import { activeGoals } from '../data/goals';
 import { currentWeekDots, daysSinceLastSession, sessionsThisMonth, weekStreak } from '../data/training';
 import { bestE1RMHistory } from '../data/workout';
+import { MUSCLE_LABEL, muscleOf } from '../data/exercises';
 import { ExerciseProgress } from './ExerciseProgress';
 import { DAYS_SHORT, MONTHS, TODAY } from '../data/constants';
 import type { Macros, StrengthGoal, Store } from '../types';
@@ -100,7 +101,7 @@ export function DoelenTab({
         if (!seen.has(k)) { seen.add(k); order.push(e.name); }
       }
     }
-    return order.map((n) => ({ name: n, best: Math.round(bestE1RMHistory(store.workoutLog, n)) }));
+    return order.map((n) => ({ name: n, best: Math.round(bestE1RMHistory(store.workoutLog, n)), muscle: MUSCLE_LABEL[muscleOf(store, n)] }));
   })();
 
   const exportBackup = () => {
@@ -187,7 +188,10 @@ export function DoelenTab({
               <div className="ff-sublabel" style={{ marginBottom: 10 }}>Oefeningen · voortgang</div>
               {exStats.map((e) => (
                 <div key={e.name} className="ff-prev ff-goal-tap" onClick={() => setProgEx(e.name)}>
-                  <div className="ff-prev-name">{e.name}</div>
+                  <div style={{ minWidth: 0 }}>
+                    <div className="ff-prev-name">{e.name}</div>
+                    <div className="ff-prev-muscle">{e.muscle}</div>
+                  </div>
                   <div className="ff-prev-meta">~{e.best} kg 1RM {Ic.chev(14)}</div>
                 </div>
               ))}
@@ -311,7 +315,7 @@ export function DoelenTab({
         />
       )}
 
-      {progEx && <ExerciseProgress name={progEx} workoutLog={store.workoutLog} onClose={() => setProgEx(null)} />}
+      {progEx && <ExerciseProgress name={progEx} store={store} workoutLog={store.workoutLog} onClose={() => setProgEx(null)} />}
     </div>
   );
 }

@@ -408,3 +408,23 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--ff-bg); }
 .ff-pchart { display: block; height: 150px; overflow: visible; }
 .ff-pchart-val { font-family: var(--ff-mono); font-size: 12px; font-weight: 700; }
 .ff-pchart-ax { fill: var(--ff-faint); font-family: var(--ff-mono); font-size: 9px; }
+
+/* exercise library picker */
+.ff-musclefilter { display: flex; gap: 6px; overflow-x: auto; margin-top: 12px; padding-bottom: 2px; }
+.ff-musclefilter::-webkit-scrollbar { height: 0; }
+.ff-mf { flex-shrink: 0; border: 1px solid var(--ff-line); background: transparent; color: var(--ff-muted); font-family: var(--ff-mono); font-size: 11px; font-weight: 700; letter-spacing: .02em; border-radius: 99px; padding: 7px 13px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ff-mf.on { background: var(--ff-amber); border-color: var(--ff-amber); color: #1a1304; }
+.ff-exrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--ff-card); border: 1px solid var(--ff-line); border-radius: 12px; padding: 12px 12px 12px 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ff-exrow + .ff-exrow { margin-top: 7px; }
+.ff-exrow:active { border-color: var(--ff-amber-dim); }
+.ff-exrow.added { opacity: .5; }
+.ff-exrow.added .ff-exrow-add { color: var(--ff-amber); }
+.ff-exrow-new { border-color: var(--ff-amber-dim); color: var(--ff-amber); font-family: var(--ff-mono); font-weight: 700; font-size: 13px; }
+.ff-exrow-new .plus { margin-right: 6px; }
+.ff-exrow-name { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ff-exrow-muscle { font-family: var(--ff-mono); font-size: 11px; color: var(--ff-muted); margin-top: 3px; }
+.ff-exrow-add { flex-shrink: 0; display: flex; color: var(--ff-faint); }
+.ff-musclegrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ff-muscle-btn { border: 1px solid var(--ff-line); background: transparent; color: var(--ff-text); font-family: var(--ff-mono); font-size: 13px; font-weight: 600; border-radius: 11px; padding: 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ff-muscle-btn.on { background: var(--ff-amber); border-color: var(--ff-amber); color: #1a1304; }
+.ff-prev-muscle { font-family: var(--ff-mono); font-size: 10px; letter-spacing: .04em; color: var(--ff-faint); text-transform: uppercase; margin-top: 3px; }

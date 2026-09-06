@@ -2,22 +2,26 @@ import { useState } from 'react';
 import { Ic } from '../components/Icons';
 import { ProgressChart } from '../components/ProgressChart';
 import { bestE1RMHistory, exerciseHistory } from '../data/workout';
-import type { WorkoutSession } from '../types';
+import { MUSCLE_LABEL, muscleOf } from '../data/exercises';
+import type { Store, WorkoutSession } from '../types';
 
 type Metric = '1rm' | 'volume' | 'gewicht';
 
 export function ExerciseProgress({
   name,
+  store,
   workoutLog,
   onClose,
 }: {
   name: string;
+  store: Store;
   workoutLog?: WorkoutSession[];
   onClose: () => void;
 }) {
   const [metric, setMetric] = useState<Metric>('1rm');
   const history = exerciseHistory(workoutLog, name);
   const best = Math.round(bestE1RMHistory(workoutLog, name));
+  const muscle = MUSCLE_LABEL[muscleOf(store, name)];
 
   const points = history.map((h) => ({
     date: h.date,
@@ -34,7 +38,7 @@ export function ExerciseProgress({
       </div>
       <div className="ff-obody">
         <div className="ff-h1" style={{ fontSize: 24, marginBottom: 2 }}>{name}</div>
-        <div className="ff-food-brand">{history.length} sessie{history.length !== 1 ? 's' : ''} · beste ~{best} kg 1RM</div>
+        <div className="ff-food-brand">{muscle} · {history.length} sessie{history.length !== 1 ? 's' : ''} · beste ~{best} kg 1RM</div>
 
         <div className="ff-seg" style={{ marginTop: 16 }}>
           <button className={'ff-seg-btn' + (metric === '1rm' ? ' on' : '')} onClick={() => setMetric('1rm')}>Geschat 1RM</button>
