@@ -11,8 +11,9 @@ import {
   newPRs,
   exerciseHistory,
   muscleVolume,
+  deriveRoutines,
 } from './workout';
-import type { DaySchema, LiveWorkout, Muscle, WorkoutSession } from '../types';
+import type { Days, DaySchema, LiveWorkout, Muscle, WorkoutSession } from '../types';
 
 describe('epley1RM', () => {
   it('takes a single rep at face value', () => {
@@ -118,6 +119,25 @@ describe('exerciseHistory', () => {
     expect(h).toHaveLength(2);
     expect(h[0].date).toBe('2026-01-01');
     expect(h[1].topWeight).toBe(65);
+  });
+});
+
+describe('deriveRoutines', () => {
+  it('makes one routine per non-empty weekday, in order', () => {
+    const days: Days = {
+      0: { title: 'Push', tag: 'A', ex: [{ name: 'Bench Press', sets: [] }] },
+      2: { title: 'Pull', tag: 'B', ex: [{ name: 'Row', sets: [] }] },
+      4: { title: 'Empty', tag: 'C', ex: [] },
+    };
+    const r = deriveRoutines(days);
+    expect(r).toHaveLength(2);
+    expect(r[0].title).toBe('Push');
+    expect(r[1].title).toBe('Pull');
+    expect(r[0]).not.toHaveProperty('id');
+  });
+
+  it('returns empty for an empty schedule', () => {
+    expect(deriveRoutines({})).toEqual([]);
   });
 });
 

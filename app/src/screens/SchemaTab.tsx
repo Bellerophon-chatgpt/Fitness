@@ -1,37 +1,102 @@
 import { useRef, useState } from 'react';
-import { DAYS_LONG } from '../data/constants';
-import { daysWithEx } from '../data/store';
+import { newId } from '../data/nutrition';
 import { Ic } from '../components/Icons';
 import { TopBar } from '../components/TopBar';
-import { DayStrip } from '../components/DayStrip';
 import { buzz } from '../utils/feedback';
-import type { Store } from '../types';
+import type { Routine, Store } from '../types';
 
-interface DragState {
-  idx: number;
-  pointerStart: number;
-  rowTop: number;
-}
+interface DragState { idx: number; pointerStart: number }
 
 export function SchemaTab({
   store,
-  selDay,
-  setSelDay,
+  addRoutine,
+  updateRoutineMeta,
+  deleteRoutine,
   setExerciseSets,
   removeExercise,
   moveExercise,
   openAdd,
 }: {
   store: Store;
-  selDay: number;
-  setSelDay: (i: number) => void;
-  setExerciseSets: (day: number, ei: number, count: number) => void;
-  removeExercise: (day: number, ei: number) => void;
-  moveExercise: (day: number, from: number, to: number) => void;
-  openAdd: (day: number) => void;
+  addRoutine: (r: Routine) => void;
+  updateRoutineMeta: (id: string, patch: Partial<Pick<Routine, 'title' | 'tag'>>) => void;
+  deleteRoutine: (id: string) => void;
+  setExerciseSets: (id: string, ei: number, count: number) => void;
+  removeExercise: (id: string, ei: number) => void;
+  moveExercise: (id: string, from: number, to: number) => void;
+  openAdd: (routineId: string) => void;
 }) {
-  const day = store.days[selDay];
-  const dots = daysWithEx(store);
+  const routines = store.routines ?? [];
+  const [selId, setSelId] = useState<string | null>(null);
+  const routine = routines.find((r) => r.id === selId) || null;
+
+  const create = () => {
+    const r: Routine = { id: newId(), title: 'Nieuwe routine', tag: 'Training', ex: [] };
+    addRoutine(r);
+    setSelId(r.id);
+  };
+
+  // --- routine list ---
+  if (!routine) {
+    return (
+      <div className="ff">
+        <div className="ff-body">
+          <TopBar />
+          <div style={{ marginBottom: 14 }}>
+            <div className="ff-label">Schema</div>
+            <div className="ff-h1" style={{ fontSize: 22 }}>Routines</div>
+          </div>
+          <div className="ff-scroll">
+            {routines.length === 0 && <div className="ff-empty" style={{ marginBottom: 14 }}>Nog geen routines. Maak er een aan om te beginnen.</div>}
+            {routines.map((r) => (
+              <div key={r.id} className="ff-rt" onClick={() => setSelId(r.id)}>
+                <div style={{ minWidth: 0 }}>
+                  <div className="ff-rt-title">{r.title}</div>
+                  <div className="ff-rt-sub">{r.tag} · {r.ex.length} oefening{r.ex.length !== 1 ? 'en' : ''}</div>
+                </div>
+                <span className="ff-rt-go">{Ic.chev(16)}</span>
+              </div>
+            ))}
+            <button className="ff-btn ff-btn-primary" style={{ marginTop: 14 }} onClick={create}>+ Nieuwe routine</button>
+            <div style={{ height: 8 }} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- routine editor ---
+  return <RoutineEditor
+    routine={routine}
+    onBack={() => setSelId(null)}
+    updateRoutineMeta={updateRoutineMeta}
+    deleteRoutine={(id) => { deleteRoutine(id); setSelId(null); }}
+    setExerciseSets={setExerciseSets}
+    removeExercise={removeExercise}
+    moveExercise={moveExercise}
+    openAdd={openAdd}
+  />;
+}
+
+function RoutineEditor({
+  routine,
+  onBack,
+  updateRoutineMeta,
+  deleteRoutine,
+  setExerciseSets,
+  removeExercise,
+  moveExercise,
+  openAdd,
+}: {
+  routine: Routine;
+  onBack: () => void;
+  updateRoutineMeta: (id: string, patch: Partial<Pick<Routine, 'title' | 'tag'>>) => void;
+  deleteRoutine: (id: string) => void;
+  setExerciseSets: (id: string, ei: number, count: number) => void;
+  removeExercise: (id: string, ei: number) => void;
+  moveExercise: (id: string, from: number, to: number) => void;
+  openAdd: (routineId: string) => void;
+}) {
   const listRef = useRef<HTMLDivElement>(null);
   const drag = useRef<DragState | null>(null);
   const [dragIdx, setDragIdx] = useState(-1);
@@ -39,21 +104,11 @@ export function SchemaTab({
 
   const onGripDown = (e: React.PointerEvent, startIdx: number) => {
     e.preventDefault();
-    const rows = [...listRef.current!.querySelectorAll('.ff-srow')];
-    drag.current = {
-      idx: startIdx,
-      pointerStart: e.clientY,
-      rowTop: rows[startIdx].getBoundingClientRect().top,
-    };
+    drag.current = { idx: startIdx, pointerStart: e.clientY };
     setDragIdx(startIdx);
     setDragY(0);
-    try {
-      (e.target as Element).setPointerCapture(e.pointerId);
-    } catch {
-      // pointer capture unsupported — drag still works via move/up handlers
-    }
+    try { (e.target as Element).setPointerCapture(e.pointerId); } catch { /* unsupported */ }
   };
-
   const onGripMove = (e: React.PointerEvent) => {
     if (!drag.current) return;
     const d = drag.current;
@@ -69,7 +124,7 @@ export function SchemaTab({
       if (d.idx > i && y < mid) target = i;
     }
     if (target !== d.idx) {
-      moveExercise(selDay, d.idx, target);
+      moveExercise(routine.id, d.idx, target);
       d.idx = target;
       setDragIdx(target);
       d.pointerStart = e.clientY;
@@ -77,77 +132,70 @@ export function SchemaTab({
       buzz();
     }
   };
-
   const onGripUp = (e: React.PointerEvent) => {
     drag.current = null;
     setDragIdx(-1);
     setDragY(0);
-    try {
-      (e.target as Element).releasePointerCapture(e.pointerId);
-    } catch {
-      // no-op
-    }
+    try { (e.target as Element).releasePointerCapture(e.pointerId); } catch { /* no-op */ }
   };
 
   return (
     <div className="ff">
       <div className="ff-body">
-        <TopBar />
-        <div style={{ marginBottom: 14 }}>
-          <div className="ff-label">Schema beheren</div>
-        </div>
-        <div style={{ marginBottom: 16 }}>
-          <DayStrip sel={selDay} onSel={setSelDay} dotDays={dots} />
+        <div className="ff-ohead" style={{ paddingLeft: 0, paddingRight: 0 }}>
+          <button className="ff-x" onClick={onBack}>{Ic.chev(18, 'currentColor')}</button>
+          <div className="ff-sublabel">Routine bewerken</div>
+          <button className="ff-x" onClick={() => { if (confirm(`Routine "${routine.title}" verwijderen?`)) deleteRoutine(routine.id); }} aria-label="Verwijderen">{Ic.trash(17)}</button>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div className="ff-h1" style={{ fontSize: 20 }}>{DAYS_LONG[selDay]}</div>
-          {day && <div className="ff-sublabel">{day.ex.length > 1 ? 'sleep ☰ om te ordenen' : day.tag}</div>}
+        <input
+          className="ff-title-input"
+          value={routine.title}
+          onChange={(e) => updateRoutineMeta(routine.id, { title: e.target.value })}
+          placeholder="Naam van de routine"
+        />
+        <input
+          className="ff-search"
+          style={{ marginTop: 8 }}
+          value={routine.tag}
+          onChange={(e) => updateRoutineMeta(routine.id, { tag: e.target.value })}
+          placeholder="Label (bijv. Push, Upper, A)"
+        />
+
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', margin: '16px 0 10px' }}>
+          <div className="ff-sublabel">Oefeningen</div>
+          {routine.ex.length > 1 && <div className="ff-sublabel" style={{ color: 'var(--ff-faint)' }}>sleep ☰ om te ordenen</div>}
         </div>
 
         <div className="ff-scroll" ref={listRef}>
-          {!day || day.ex.length === 0 ? (
-            <div className="ff-empty">
-              Nog geen oefeningen.
-              <div style={{ marginTop: 14 }}>
-                <button className="ff-btn ff-btn-primary" style={{ height: 48, fontSize: 12 }} onClick={() => openAdd(selDay)}>
-                  + Oefening toevoegen
-                </button>
-              </div>
-            </div>
+          {routine.ex.length === 0 ? (
+            <div className="ff-empty">Nog geen oefeningen.</div>
           ) : (
-            <>
-              {day.ex.map((e, i) => (
-                <div
-                  key={e.name + '_' + i}
-                  className={'ff-srow' + (dragIdx === i ? ' dragging' : '')}
-                  style={dragIdx === i ? { transform: `translateY(${dragY}px)` } : undefined}
-                >
-                  <div
-                    className="ff-grip"
-                    onPointerDown={(ev) => onGripDown(ev, i)}
-                    onPointerMove={onGripMove}
-                    onPointerUp={onGripUp}
-                    onPointerCancel={onGripUp}
-                  >
-                    {Ic.grip(20)}
-                  </div>
-                  <div className="ff-srow-name">{e.name}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div className="ff-mini">
-                      <button onClick={() => setExerciseSets(selDay, i, e.sets.length - 1)}>−</button>
-                      <div className="v">{e.sets.length} set{e.sets.length !== 1 ? 's' : ''}</div>
-                      <button onClick={() => setExerciseSets(selDay, i, e.sets.length + 1)}>+</button>
-                    </div>
-                    <button className="ff-del" onClick={() => removeExercise(selDay, i)}>{Ic.close(15, '#8a8a90')}</button>
-                  </div>
+            routine.ex.map((e, i) => (
+              <div
+                key={e.name + '_' + i}
+                className={'ff-srow' + (dragIdx === i ? ' dragging' : '')}
+                style={dragIdx === i ? { transform: `translateY(${dragY}px)` } : undefined}
+              >
+                <div className="ff-grip" onPointerDown={(ev) => onGripDown(ev, i)} onPointerMove={onGripMove} onPointerUp={onGripUp} onPointerCancel={onGripUp}>
+                  {Ic.grip(20)}
                 </div>
-              ))}
-              <button className="ff-btn ff-btn-ghost" style={{ marginTop: 12 }} onClick={() => openAdd(selDay)}>
-                + Oefening toevoegen
-              </button>
-            </>
+                <div className="ff-srow-name">{e.name}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div className="ff-mini">
+                    <button onClick={() => setExerciseSets(routine.id, i, e.sets.length - 1)}>−</button>
+                    <div className="v">{e.sets.length} set{e.sets.length !== 1 ? 's' : ''}</div>
+                    <button onClick={() => setExerciseSets(routine.id, i, e.sets.length + 1)}>+</button>
+                  </div>
+                  <button className="ff-del" onClick={() => removeExercise(routine.id, i)}>{Ic.close(15, '#8a8a90')}</button>
+                </div>
+              </div>
+            ))
           )}
+          <button className="ff-btn ff-btn-ghost" style={{ marginTop: 12 }} onClick={() => openAdd(routine.id)}>
+            + Oefening toevoegen
+          </button>
+          <div style={{ height: 8 }} />
         </div>
       </div>
     </div>

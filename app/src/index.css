@@ -443,3 +443,20 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--ff-bg); }
 .ff-setcount button { border: 1px solid var(--ff-line); background: transparent; color: var(--ff-amber); font-family: var(--ff-mono); font-size: 12px; font-weight: 700; border-radius: 9px; padding: 6px 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .ff-setcount button:disabled { color: var(--ff-faint); opacity: .5; cursor: default; }
 .ff-setcount button:active:not(:disabled) { background: var(--ff-card); }
+
+/* routine manager (Schema) */
+.ff-rt { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--ff-card); border: 1px solid var(--ff-line); border-radius: 13px; padding: 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ff-rt + .ff-rt { margin-top: 8px; }
+.ff-rt:active { border-color: var(--ff-amber-dim); }
+.ff-rt-title { font-size: 16px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ff-rt-sub { font-family: var(--ff-mono); font-size: 11px; color: var(--ff-muted); margin-top: 3px; }
+.ff-rt-go { flex-shrink: 0; display: flex; color: var(--ff-faint); }
+.ff-title-input { width: 100%; background: var(--ff-card); border: 1px solid var(--ff-line); border-radius: 12px; padding: 12px 14px; color: var(--ff-text); font-size: 18px; font-weight: 700; font-family: inherit; -webkit-tap-highlight-color: transparent; }
+.ff-title-input:focus { outline: none; border-color: var(--ff-amber); }
+
+/* routine picker cards (Training) */
+.ff-rtcard { background: var(--ff-card); border: 1px solid var(--ff-line); border-radius: 16px; padding: 16px; }
+.ff-rtcard + .ff-rtcard { margin-top: 10px; }
+.ff-rtcard-title { font-size: 18px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ff-rtcard-sub { font-family: var(--ff-mono); font-size: 11px; color: var(--ff-muted); margin-top: 3px; }
+.ff-rtcard-ex { font-size: 13px; color: var(--ff-muted); margin-top: 10px; line-height: 1.4; }

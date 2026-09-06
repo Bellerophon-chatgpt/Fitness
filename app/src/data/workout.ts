@@ -1,4 +1,4 @@
-import type { DaySchema, Exercise, LiveWorkout, LoggedExercise, Muscle, SetEntry, WorkoutSession } from '../types';
+import type { Days, DaySchema, Exercise, LiveWorkout, LoggedExercise, Muscle, SetEntry, WorkoutSession } from '../types';
 
 const norm = (s: string) => s.trim().toLowerCase();
 
@@ -99,6 +99,17 @@ export function exerciseHistory(log: WorkoutSession[] | undefined, name: string)
     }
   }
   return pts;
+}
+
+// Convert the legacy weekday schema into named routines (without ids — the
+// caller assigns those). One routine per non-empty weekday, in weekday order.
+export function deriveRoutines(days: Days): { title: string; tag: string; ex: Exercise[] }[] {
+  const out: { title: string; tag: string; ex: Exercise[] }[] = [];
+  for (let wd = 0; wd < 7; wd++) {
+    const d = days[wd];
+    if (d && d.ex.length) out.push({ title: d.title, tag: d.tag, ex: d.ex });
+  }
+  return out;
 }
 
 // Total training volume per muscle group across sessions in a date window

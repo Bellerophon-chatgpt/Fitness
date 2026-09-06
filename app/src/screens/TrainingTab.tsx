@@ -1,18 +1,12 @@
-import { DAYS_LONG, TODAY } from '../data/constants';
-import { daysWithEx } from '../data/store';
+import { TODAY, DAYS_LONG, MONTHS } from '../data/constants';
 import { dateKey } from '../data/nutrition';
-import { lastPerformance } from '../data/workout';
 import { Ic } from '../components/Icons';
 import { TopBar } from '../components/TopBar';
-import { DayStrip } from '../components/DayStrip';
-import type { Exercise, Store } from '../types';
+import type { Routine, Store } from '../types';
 
 export function TrainingTab({
   store,
-  selDay,
-  setSelDay,
   openFocus,
-  openAdd,
   toggleSession,
   startWorkout,
   toggleLiveSet,
@@ -20,40 +14,28 @@ export function TrainingTab({
   discardWorkout,
 }: {
   store: Store;
-  selDay: number;
-  setSelDay: (i: number) => void;
   openFocus: (exIdx: number) => void;
-  openAdd: (day: number) => void;
   toggleSession: () => void;
-  startWorkout: () => void;
+  startWorkout: (routineId: string) => void;
   toggleLiveSet: (ei: number, si: number) => void;
   finishWorkout: () => void;
   discardWorkout: () => void;
 }) {
-  const dots = daysWithEx(store);
-  const isToday = selDay === TODAY;
   const live = store.liveWorkout;
-  const routine = store.days[selDay];
+  const routines = store.routines ?? [];
   const todayLogged = (store.sessions ?? []).some((s) => s.date === dateKey(new Date()));
+  const now = new Date();
+  const todayLabel = `${DAYS_LONG[TODAY]} · ${now.getDate()} ${MONTHS[now.getMonth()]}`;
 
-  const header = (
-    <>
-      <TopBar />
-      <div style={{ marginBottom: 12 }}>
-        <DayStrip sel={selDay} onSel={setSelDay} dotDays={dots} />
-      </div>
-    </>
-  );
-
-  // 1) A live workout is in progress (always about today)
-  if (live && isToday) {
+  // --- A live workout is in progress ---
+  if (live) {
     let done = 0;
     let total = 0;
     live.ex.forEach((e) => e.sets.forEach((s) => { total++; if (s.done) done++; }));
     return (
       <div className="ff">
         <div className="ff-body">
-          {header}
+          <TopBar />
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 10 }}>
             <div>
               <div className="ff-label" style={{ color: 'var(--ff-amber)' }}>Bezig · {live.tag}</div>
@@ -91,12 +73,8 @@ export function TrainingTab({
                 </div>
               );
             })}
-            <button className="ff-btn ff-btn-primary" style={{ marginTop: 14 }} onClick={finishWorkout}>
-              Training afronden ✓
-            </button>
-            <button className="ff-link-btn" onClick={() => { if (confirm('Deze sessie verwerpen? Je logt niets.')) discardWorkout(); }}>
-              Verwerp sessie
-            </button>
+            <button className="ff-btn ff-btn-primary" style={{ marginTop: 14 }} onClick={finishWorkout}>Training afronden ✓</button>
+            <button className="ff-link-btn" onClick={() => { if (confirm('Deze sessie verwerpen? Je logt niets.')) discardWorkout(); }}>Verwerp sessie</button>
             <div style={{ height: 8 }} />
           </div>
         </div>
@@ -104,77 +82,27 @@ export function TrainingTab({
     );
   }
 
-  // 2) Today, a routine exists, not started yet → preview + Start
-  if (isToday && routine && routine.ex.length > 0) {
-    return (
-      <div className="ff">
-        <div className="ff-body">
-          {header}
-          <div style={{ marginBottom: 12 }}>
-            <div className="ff-label">Vandaag · {routine.tag}</div>
-            <div className="ff-h1">{routine.title}</div>
-          </div>
-          <button className="ff-btn ff-btn-primary" onClick={startWorkout}>Start workout</button>
-          {todayLogged && (
-            <div className="ff-hint-line">Je hebt vandaag al een training gelogd — starten voegt een nieuwe toe.</div>
-          )}
-
-          <div className="ff-scroll" style={{ marginTop: 16 }}>
-            <div className="ff-sublabel" style={{ marginBottom: 8 }}>Vandaag op het programma</div>
-            {routine.ex.map((e, i) => <PreviewRow key={i} ex={e} store={store} />)}
-            <button className="ff-btn ff-btn-ghost" style={{ marginTop: 12 }} onClick={() => openAdd(selDay)}>+ Oefening</button>
-            <div style={{ height: 8 }} />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // 3) Today is a rest day (no routine) → quick-log option
-  if (isToday) {
-    return (
-      <div className="ff">
-        <div className="ff-body">
-          {header}
-          <div className="ff-scroll">
-            <div style={{ marginBottom: 14 }}>
-              <div className="ff-label">{DAYS_LONG[selDay]}</div>
-              <div className="ff-h1">Rustdag</div>
-            </div>
-            <div className="ff-empty">
-              Geen routine voor vandaag.
-              <div style={{ marginTop: 14 }}>
-                <button className="ff-btn ff-btn-primary" style={{ height: 48, fontSize: 12 }} onClick={() => openAdd(selDay)}>+ Oefening toevoegen</button>
-              </div>
-            </div>
-            <button className={'ff-loglog' + (todayLogged ? ' done' : '')} style={{ marginTop: 16 }} onClick={toggleSession}>
-              {todayLogged ? <>{Ic.check(15)} Getraind — tik om ongedaan te maken</> : <>Toch getraind? Markeer als afgerond</>}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // 4) Another weekday → read-only routine preview
+  // --- Pick a routine to start ---
   return (
     <div className="ff">
       <div className="ff-body">
-        {header}
-        <div style={{ marginBottom: 12 }}>
-          <div className="ff-label">{DAYS_LONG[selDay]}{routine ? ' · ' + routine.tag : ''}</div>
-          <div className="ff-h1">{routine?.title ?? 'Rustdag'}</div>
+        <TopBar />
+        <div style={{ marginBottom: 14 }}>
+          <div className="ff-label">{todayLabel}</div>
+          <div className="ff-h1" style={{ fontSize: 22 }}>Wat train je?</div>
         </div>
+
         <div className="ff-scroll">
-          {routine && routine.ex.length > 0 ? (
-            <>
-              <div className="ff-sublabel" style={{ marginBottom: 8 }}>Op het programma</div>
-              {routine.ex.map((e, i) => <PreviewRow key={i} ex={e} store={store} />)}
-              <div className="ff-hint-line">Je kunt alleen de training van vandaag starten.</div>
-            </>
+          {routines.length === 0 ? (
+            <div className="ff-empty">Nog geen routines. Maak er een aan in de Schema-tab.</div>
           ) : (
-            <div className="ff-empty">Geen oefeningen voor {DAYS_LONG[selDay].toLowerCase()}.</div>
+            routines.map((r) => <RoutineCard key={r.id} routine={r} store={store} onStart={() => startWorkout(r.id)} />)
           )}
+
+          <div className="ff-sublabel" style={{ margin: '22px 0 10px' }}>Anders</div>
+          <button className={'ff-loglog' + (todayLogged ? ' done' : '')} onClick={toggleSession}>
+            {todayLogged ? <>{Ic.check(15)} Vandaag afgerond — tik om ongedaan te maken</> : <>Iets anders getraind? Markeer als afgerond</>}
+          </button>
           <div style={{ height: 8 }} />
         </div>
       </div>
@@ -182,15 +110,28 @@ export function TrainingTab({
   );
 }
 
-function PreviewRow({ ex, store }: { ex: Exercise; store: Store }) {
-  const prev = lastPerformance(store.workoutLog, ex.name);
-  const top = prev ? prev.sets.reduce((a, s) => (s.weight > a.weight ? s : a), prev.sets[0]) : null;
+function RoutineCard({ routine, store, onStart }: { routine: Routine; store: Store; onStart: () => void }) {
+  const top = routine.ex.slice(0, 3).map((e) => e.name).join(' · ');
+  const lastDone = (() => {
+    // most recent session whose title matches this routine
+    const log = store.sessions ?? [];
+    for (let i = log.length - 1; i >= 0; i--) if (log[i].title === routine.title) return log[i].date;
+    return null;
+  })();
+  const daysAgo = lastDone ? Math.round((Date.now() - new Date(lastDone).getTime()) / 86400000) : null;
+
   return (
-    <div className="ff-prev">
-      <div className="ff-prev-name">{ex.name}</div>
-      <div className="ff-prev-meta">
-        {ex.sets.length} sets{top ? ` · vorige ${top.weight}kg × ${top.reps}` : ''}
+    <div className="ff-rtcard">
+      <div className="ff-rtcard-head">
+        <div style={{ minWidth: 0 }}>
+          <div className="ff-rtcard-title">{routine.title}</div>
+          <div className="ff-rtcard-sub">{routine.tag} · {routine.ex.length} oefening{routine.ex.length !== 1 ? 'en' : ''}{daysAgo != null ? ` · ${daysAgo === 0 ? 'vandaag' : daysAgo + 'd geleden'}` : ''}</div>
+        </div>
       </div>
+      {top && <div className="ff-rtcard-ex">{top}{routine.ex.length > 3 ? ' …' : ''}</div>}
+      <button className="ff-btn ff-btn-primary" style={{ marginTop: 12, height: 46, fontSize: 12 }} disabled={routine.ex.length === 0} onClick={onStart}>
+        Start workout
+      </button>
     </div>
   );
 }

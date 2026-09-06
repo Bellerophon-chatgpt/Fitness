@@ -16,6 +16,14 @@ export interface DaySchema {
   ex: Exercise[];
 }
 
+// A named, reusable routine (independent of the weekday).
+export interface Routine {
+  id: string;
+  title: string;
+  tag: string;
+  ex: Exercise[];
+}
+
 // --- Workout logging (dated history, separate from the routine templates) ---
 
 export interface LoggedSet {
@@ -159,11 +167,12 @@ export interface Store {
   workoutLog?: WorkoutSession[];
   liveWorkout?: LiveWorkout;
   customExercises?: ExerciseDef[];
+  routines?: Routine[];
 }
 
 export type OverlayState =
   | { type: 'focus'; exIdx: number }
-  | { type: 'add'; day: number }
+  | { type: 'add'; routineId: string }
   | null;
 
 export type Theme = 'dark' | 'light';

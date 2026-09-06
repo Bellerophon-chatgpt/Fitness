@@ -16,8 +16,8 @@ import { dateKey, emptyDay, hasFood, newId, pushRecent, shiftKey } from './data/
 import { authEnabled, getSession, onAuthChange, signOut } from './data/auth';
 import { AuthGate } from './screens/AuthGate';
 import type { Session } from '@supabase/supabase-js';
-import { buildLiveWorkout, liveToSession, newPRs } from './data/workout';
-import type { FoodItem, Macros, MealId, OverlayState, Profile, SetEntry, StrengthGoal, Store, TabId, Theme } from './types';
+import { buildLiveWorkout, deriveRoutines, liveToSession, newPRs } from './data/workout';
+import type { ExerciseDef, FoodItem, Macros, MealId, OverlayState, Profile, Routine, SetEntry, StrengthGoal, Store, TabId, Theme } from './types';
 
 function readTheme(): Theme {
   try {
@@ -30,7 +30,6 @@ function readTheme(): Theme {
 export default function App() {
   const [store, setStore] = useState<Store>(loadStore);
   const [tab, setTab] = useState<TabId>('training');
-  const [selDay, setSelDay] = useState(TODAY);
   const [overlay, setOverlay] = useState<OverlayState>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [theme, setTheme] = useState<Theme>(readTheme);
@@ -55,12 +54,25 @@ export default function App() {
   // when signed in (or when running local-only), reconcile local vs. remote:
   // whichever copy was written most recently wins
   const uid = session?.user.id;
+  const [settled, setSettled] = useState(false);
   useEffect(() => {
-    if (authEnabled && !uid) return;
+    if (authEnabled && !uid) { setSettled(true); return; }
     reconcileStore(storeRef.current).then((remote) => {
       if (remote) setStore(remote);
+      setSettled(true);
     });
   }, [uid]);
+
+  // one-time (after sync settles): derive named routines from the legacy weekday schema
+  useEffect(() => {
+    if (!settled) return;
+    if (storeRef.current.routines) return;
+    update((n) => {
+      if (n.routines) return;
+      n.routines = deriveRoutines(n.days).map((r) => ({ id: newId(), ...r }));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settled]);
 
   useEffect(() => {
     if (!syncEnabled) return;
@@ -114,33 +126,41 @@ export default function App() {
     [],
   );
 
-  const addExercise = (day: number, name: string) => {
-    update((n) => {
-      if (!n.days[day]) n.days[day] = { title: 'Eigen schema', tag: 'Training', ex: [] };
-      n.days[day]!.ex.push({
-        name,
-        sets: Array.from({ length: 3 }, () => ({ reps: 10, weight: 20, done: false, last: null })),
-      });
-    });
-    flash(name + ' toegevoegd');
-  };
-
-  const registerExercise = (def: import('./types').ExerciseDef) =>
+  const registerExercise = (def: ExerciseDef) =>
     update((n) => {
       const k = def.name.trim().toLowerCase();
       const list = n.customExercises ?? [];
       if (!list.some((d) => d.name.trim().toLowerCase() === k)) n.customExercises = [...list, def];
     });
 
-  const removeExercise = (day: number, ei: number) =>
-    update((n) => {
-      n.days[day]!.ex.splice(ei, 1);
-      if (n.days[day]!.ex.length === 0) delete n.days[day];
-    });
+  const rt = (n: Store, id: string): Routine | undefined => (n.routines ?? []).find((r) => r.id === id);
 
-  const setExerciseSets = (day: number, ei: number, count: number) =>
+  const addRoutine = (routine: Routine) =>
+    update((n) => { n.routines = [...(n.routines ?? []), routine]; });
+
+  const updateRoutineMeta = (id: string, patch: Partial<Pick<Routine, 'title' | 'tag'>>) =>
+    update((n) => { const r = rt(n, id); if (r) Object.assign(r, patch); });
+
+  const deleteRoutine = (id: string) =>
+    update((n) => { n.routines = (n.routines ?? []).filter((r) => r.id !== id); });
+
+  const addExerciseToRoutine = (id: string, name: string) => {
     update((n) => {
-      const ex = n.days[day]!.ex[ei];
+      const r = rt(n, id);
+      if (!r) return;
+      r.ex.push({ name, sets: Array.from({ length: 3 }, () => ({ reps: 10, weight: 20, done: false, last: null })) });
+    });
+    flash(name + ' toegevoegd');
+  };
+
+  const removeRoutineExercise = (id: string, ei: number) =>
+    update((n) => { const r = rt(n, id); if (r) r.ex.splice(ei, 1); });
+
+  const setRoutineExerciseSets = (id: string, ei: number, count: number) =>
+    update((n) => {
+      const r = rt(n, id);
+      const ex = r?.ex[ei];
+      if (!ex) return;
       count = Math.max(1, Math.min(8, count));
       if (count > ex.sets.length) {
         const last = ex.sets[ex.sets.length - 1] || { reps: 10, weight: 20 };
@@ -150,12 +170,13 @@ export default function App() {
       }
     });
 
-  const moveExercise = (day: number, from: number, to: number) =>
+  const moveRoutineExercise = (id: string, from: number, to: number) =>
     update((n) => {
-      const arr = n.days[day]!.ex;
-      if (to < 0 || to >= arr.length || from === to) return;
-      const [m] = arr.splice(from, 1);
-      arr.splice(to, 0, m);
+      const r = rt(n, id);
+      if (!r) return;
+      if (to < 0 || to >= r.ex.length || from === to) return;
+      const [m] = r.ex.splice(from, 1);
+      r.ex.splice(to, 0, m);
     });
 
   const addFood = (dk: string, meal: MealId, item: FoodItem) => {
@@ -258,7 +279,7 @@ export default function App() {
   };
 
   const openFocus = (exIdx: number) => setOverlay({ type: 'focus', exIdx });
-  const openAdd = (day: number) => setOverlay({ type: 'add', day });
+  const openAdd = (routineId: string) => setOverlay({ type: 'add', routineId });
   const navFocus = (dir: 1 | -1) =>
     setOverlay((o) => {
       if (!o || o.type !== 'focus') return o;
@@ -267,9 +288,9 @@ export default function App() {
     });
 
   // --- live workout ---
-  const startWorkout = () => {
+  const startWorkout = (routineId: string) => {
     update((n) => {
-      const routine = n.days[TODAY];
+      const routine = (n.routines ?? []).find((r) => r.id === routineId);
       if (!routine || routine.ex.length === 0) return;
       n.liveWorkout = buildLiveWorkout(routine, TODAY, n.workoutLog);
     });
@@ -376,10 +397,10 @@ export default function App() {
   }
 
   let screen;
-  if (tab === 'training') screen = <TrainingTab store={store} selDay={selDay} setSelDay={setSelDay} openFocus={openFocus} openAdd={openAdd} toggleSession={toggleSessionToday} startWorkout={startWorkout} toggleLiveSet={toggleLiveSet} finishWorkout={finishWorkout} discardWorkout={discardWorkout} />;
+  if (tab === 'training') screen = <TrainingTab store={store} openFocus={openFocus} toggleSession={toggleSessionToday} startWorkout={startWorkout} toggleLiveSet={toggleLiveSet} finishWorkout={finishWorkout} discardWorkout={discardWorkout} />;
   else if (tab === 'voeding') screen = <VoedingTab store={store} addFood={addFood} updateAmount={updateFoodAmount} removeFood={removeFood} saveGoalConfig={saveGoalConfig} copyPreviousDay={copyPreviousDay} addWater={addWater} />;
-  else if (tab === 'schema') screen = <SchemaTab store={store} selDay={selDay} setSelDay={setSelDay} setExerciseSets={setExerciseSets} removeExercise={removeExercise} moveExercise={moveExercise} openAdd={openAdd} />;
-  else if (tab === 'coaching') screen = <CoachingTab store={store} goDay={(i) => { setSelDay(i); setTab('training'); }} />;
+  else if (tab === 'schema') screen = <SchemaTab store={store} addRoutine={addRoutine} updateRoutineMeta={updateRoutineMeta} deleteRoutine={deleteRoutine} setExerciseSets={setRoutineExerciseSets} removeExercise={removeRoutineExercise} moveExercise={moveRoutineExercise} openAdd={openAdd} />;
+  else if (tab === 'coaching') screen = <CoachingTab store={store} goDay={() => setTab('training')} />;
   else screen = <DoelenTab store={store} email={session?.user.email ?? null} onSignOut={session ? doSignOut : undefined} logWeight={logWeight} setWeightGoal={setWeightGoal} setStrengthGoals={setStrengthGoals} onImport={replaceStore} />;
 
   return (
@@ -402,7 +423,7 @@ export default function App() {
                 onFinish={() => { finishWorkout(); setOverlay(null); }}
               />
           )}
-          {overlay?.type === 'add' && <AddPicker store={store} day={overlay.day} addExercise={addExercise} registerExercise={registerExercise} onClose={() => setOverlay(null)} />}
+          {overlay?.type === 'add' && <AddPicker store={store} routineId={overlay.routineId} addExercise={addExerciseToRoutine} registerExercise={registerExercise} onClose={() => setOverlay(null)} />}
           {toast && <Toast message={toast} />}
         </div>
       </ThemeCtx.Provider>

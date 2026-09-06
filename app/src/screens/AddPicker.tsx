@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { DAYS_SHORT } from '../data/constants';
 import { allExercises, MUSCLE_LABEL, MUSCLES } from '../data/exercises';
 import { newId } from '../data/nutrition';
 import { Ic } from '../components/Icons';
@@ -7,14 +6,14 @@ import type { ExerciseDef, Muscle, Store } from '../types';
 
 export function AddPicker({
   store,
-  day,
+  routineId,
   addExercise,
   registerExercise,
   onClose,
 }: {
   store: Store;
-  day: number;
-  addExercise: (day: number, name: string) => void;
+  routineId: string;
+  addExercise: (routineId: string, name: string) => void;
   registerExercise: (def: ExerciseDef) => void;
   onClose: () => void;
 }) {
@@ -24,8 +23,9 @@ export function AddPicker({
   const [newName, setNewName] = useState('');
   const [newMuscle, setNewMuscle] = useState<Muscle>('chest');
 
+  const routine = (store.routines ?? []).find((r) => r.id === routineId);
   const library = useMemo(() => allExercises(store).sort((a, b) => a.name.localeCompare(b.name)), [store]);
-  const existing = new Set((store.days[day]?.ex || []).map((e) => e.name.toLowerCase()));
+  const existing = new Set((routine?.ex || []).map((e) => e.name.toLowerCase()));
   const ql = q.trim().toLowerCase();
 
   const filtered = library.filter(
@@ -38,7 +38,7 @@ export function AddPicker({
     if (!name) return;
     const def: ExerciseDef = { id: newId(), name, muscle: newMuscle, custom: true };
     registerExercise(def);
-    addExercise(day, name);
+    addExercise(routineId, name);
     setCreating(false);
     setNewName('');
     setQ('');
@@ -71,7 +71,7 @@ export function AddPicker({
     <div className="ff-overlay">
       <div className="ff-ohead">
         <button className="ff-x" onClick={onClose}>{Ic.close(18)}</button>
-        <div className="ff-sublabel">Oefening toevoegen · {DAYS_SHORT[day]}</div>
+        <div className="ff-sublabel">Oefening toevoegen · {routine?.title ?? ''}</div>
         <div className="ff-x" style={{ borderColor: 'transparent', background: 'transparent' }} />
       </div>
       <div className="ff-obody">
@@ -95,7 +95,7 @@ export function AddPicker({
             {filtered.map((d) => {
               const added = existing.has(d.name.toLowerCase());
               return (
-                <div key={d.id} className={'ff-exrow' + (added ? ' added' : '')} onClick={() => !added && addExercise(day, d.name)}>
+                <div key={d.id} className={'ff-exrow' + (added ? ' added' : '')} onClick={() => !added && addExercise(routineId, d.name)}>
                   <div style={{ minWidth: 0 }}>
                     <div className="ff-exrow-name">{d.name}</div>
                     <div className="ff-exrow-muscle">{MUSCLE_LABEL[d.muscle]}{d.custom ? ' · eigen' : ''}</div>

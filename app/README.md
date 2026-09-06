@@ -44,13 +44,13 @@ email template, env vars). Sign-out is at the bottom of the Doelen tab.
 
 ## Training / workout logging
 
-The **Schema** tab holds your routine per weekday (a template: exercises + planned sets), editable and reorderable. The **Training** tab is the live logger, kept separate from the template so a workout never mutates your routine:
+The **Schema** tab is a routine manager: a library of **named routines** (Push, Pull, Legs, Upper A…) independent of the weekday, each with editable title/label and a reorderable exercise list. The **Training** tab lets you pick which routine to do today and start it; there's no fixed weekday coupling, so PPL rotations, A/B splits or "whatever's next" all work. A workout stays separate from the routine template:
 
 - On today's routine, **Start workout** creates a fresh session, pre-filled from your last performance of each exercise (pulled from history), with check-offs reset.
 - You log set by set in the focus view (weight/reps steppers, rest timer, estimated 1RM, real "vorige keer" from history, and a **PR** flag when you beat your best estimated 1RM).
 - **Afronden** writes the full session (every completed set's weight × reps, plus volume) to `workoutLog`, feeds the streak/stats, and updates "last time". Sessions are dated, so history persists — the Doelen tab lists your recent workouts with volume.
 
-A rest day (no routine) still offers a quick "markeer als afgerond" stamp. This split (routine template ↔ dated session log) is what enables real history and progression, rather than checkboxes on a recurring schedule.
+Not doing a listed routine still offers a quick "markeer als afgerond" stamp. Existing weekday schemas are migrated to named routines automatically on first load (after sync settles, so nothing is overwritten). This split (routine library ↔ dated session log) is what enables real history and progression, rather than checkboxes on a recurring schedule.
 
 Exercises come from a **built-in library** grouped by muscle (filterable in the add screen); you can also create custom exercises (name + muscle), which are stored and synced. Names already used in your routines/history show up in the picker too, so nothing gets lost. Canonical naming keeps an exercise's history from fragmenting across spellings, and the Doelen tab shows per-exercise progression (estimated 1RM / volume / top weight over time) with the muscle group, plus **weekly training volume per muscle group** so you can see whether your split is balanced.
 
