@@ -1,4 +1,4 @@
-import type { DaySchema, Exercise, LiveWorkout, LoggedExercise, SetEntry, WorkoutSession } from '../types';
+import type { DaySchema, Exercise, LiveWorkout, LoggedExercise, Muscle, SetEntry, WorkoutSession } from '../types';
 
 const norm = (s: string) => s.trim().toLowerCase();
 
@@ -99,4 +99,22 @@ export function exerciseHistory(log: WorkoutSession[] | undefined, name: string)
     }
   }
   return pts;
+}
+
+// Total training volume per muscle group across sessions in a date window
+// (inclusive of fromKey; toKey optional). `resolve` maps an exercise name to a
+// muscle, kept as a parameter so this stays pure/testable.
+export function muscleVolume(
+  log: WorkoutSession[] | undefined,
+  resolve: (name: string) => Muscle,
+  fromKey: string,
+  toKey?: string,
+): Record<Muscle, number> {
+  const out: Record<Muscle, number> = { chest: 0, back: 0, legs: 0, shoulders: 0, arms: 0, core: 0, other: 0 };
+  for (const s of log ?? []) {
+    if (s.date < fromKey) continue;
+    if (toKey && s.date > toKey) continue;
+    for (const e of s.exercises) out[resolve(e.name)] += setsVolume(e.sets);
+  }
+  return out;
 }

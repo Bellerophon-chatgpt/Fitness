@@ -10,8 +10,9 @@ import {
   liveToSession,
   newPRs,
   exerciseHistory,
+  muscleVolume,
 } from './workout';
-import type { DaySchema, LiveWorkout, WorkoutSession } from '../types';
+import type { DaySchema, LiveWorkout, Muscle, WorkoutSession } from '../types';
 
 describe('epley1RM', () => {
   it('takes a single rep at face value', () => {
@@ -117,5 +118,33 @@ describe('exerciseHistory', () => {
     expect(h).toHaveLength(2);
     expect(h[0].date).toBe('2026-01-01');
     expect(h[1].topWeight).toBe(65);
+  });
+});
+
+describe('muscleVolume', () => {
+  const resolve = (name: string): Muscle => (name === 'Bench Press' ? 'chest' : name === 'Squat' ? 'legs' : 'other');
+  const vlog: WorkoutSession[] = [
+    { id: '1', date: '2026-01-05', weekday: 0, exercises: [{ name: 'Bench Press', sets: [{ weight: 60, reps: 10 }] }], volume: 600 },
+    { id: '2', date: '2026-01-06', weekday: 1, exercises: [{ name: 'Squat', sets: [{ weight: 100, reps: 5 }, { weight: 100, reps: 5 }] }], volume: 1000 },
+    { id: '3', date: '2025-12-31', weekday: 2, exercises: [{ name: 'Bench Press', sets: [{ weight: 50, reps: 10 }] }], volume: 500 },
+  ];
+
+  it('sums volume per muscle within the window', () => {
+    const v = muscleVolume(vlog, resolve, '2026-01-01');
+    expect(v.chest).toBe(600);
+    expect(v.legs).toBe(1000);
+    expect(v.other).toBe(0);
+  });
+
+  it('excludes sessions before the window', () => {
+    const v = muscleVolume(vlog, resolve, '2026-01-01');
+    // the 2025-12-31 bench session is excluded
+    expect(v.chest).toBe(600);
+  });
+
+  it('respects an optional end key', () => {
+    const v = muscleVolume(vlog, resolve, '2026-01-01', '2026-01-05');
+    expect(v.chest).toBe(600);
+    expect(v.legs).toBe(0);
   });
 });

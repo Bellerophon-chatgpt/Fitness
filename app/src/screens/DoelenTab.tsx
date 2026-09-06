@@ -8,9 +8,9 @@ import { EditNum } from '../components/EditNum';
 import { Ic } from '../components/Icons';
 import { dateKey, dayTotal, hasFood, newId, ZERO } from '../data/nutrition';
 import { activeGoals } from '../data/goals';
-import { currentWeekDots, daysSinceLastSession, sessionsThisMonth, weekStreak } from '../data/training';
-import { bestE1RMHistory } from '../data/workout';
-import { MUSCLE_LABEL, muscleOf } from '../data/exercises';
+import { currentWeekDots, daysSinceLastSession, sessionsThisMonth, weekStart, weekStreak } from '../data/training';
+import { bestE1RMHistory, muscleVolume } from '../data/workout';
+import { MUSCLE_LABEL, MUSCLES, muscleOf } from '../data/exercises';
 import { ExerciseProgress } from './ExerciseProgress';
 import { DAYS_SHORT, MONTHS, TODAY } from '../data/constants';
 import type { Macros, StrengthGoal, Store } from '../types';
@@ -104,6 +104,13 @@ export function DoelenTab({
     return order.map((n) => ({ name: n, best: Math.round(bestE1RMHistory(store.workoutLog, n)), muscle: MUSCLE_LABEL[muscleOf(store, n)] }));
   })();
 
+  // training volume per muscle group this week
+  const weekKey = dateKey(weekStart(new Date()));
+  const vol = muscleVolume(store.workoutLog, (n) => muscleOf(store, n), weekKey);
+  const volEntries = MUSCLES.filter((m) => vol[m] > 0).sort((a, b) => vol[b] - vol[a]);
+  const volMax = Math.max(1, ...volEntries.map((m) => vol[m]));
+  const volTotal = volEntries.reduce((a, m) => a + vol[m], 0);
+
   const exportBackup = () => {
     const blob = new Blob([JSON.stringify(store, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -179,6 +186,25 @@ export function DoelenTab({
                   <div className="ff-wsession-vol"><b>{Math.round(w.volume).toLocaleString('nl-NL')}</b><span>kg volume</span></div>
                 </div>
               ))}
+              <div style={{ height: 18 }} />
+            </>
+          )}
+
+          {volTotal > 0 && (
+            <>
+              <div className="ff-sublabel" style={{ marginBottom: 10 }}>Volume deze week · per spiergroep</div>
+              <div className="ff-vol">
+                {volEntries.map((m) => (
+                  <div key={m} className="ff-volrow">
+                    <div className="ff-volrow-top">
+                      <span>{MUSCLE_LABEL[m]}</span>
+                      <span className="v">{Math.round(vol[m]).toLocaleString('nl-NL')} kg</span>
+                    </div>
+                    <div className="ff-progress"><i style={{ width: (vol[m] / volMax) * 100 + '%' }} /></div>
+                  </div>
+                ))}
+                <div className="ff-vol-total">Totaal {Math.round(volTotal).toLocaleString('nl-NL')} kg</div>
+              </div>
               <div style={{ height: 18 }} />
             </>
           )}

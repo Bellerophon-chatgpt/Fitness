@@ -52,7 +52,7 @@ The **Schema** tab holds your routine per weekday (a template: exercises + plann
 
 A rest day (no routine) still offers a quick "markeer als afgerond" stamp. This split (routine template ↔ dated session log) is what enables real history and progression, rather than checkboxes on a recurring schedule.
 
-Exercises come from a **built-in library** grouped by muscle (filterable in the add screen); you can also create custom exercises (name + muscle), which are stored and synced. Names already used in your routines/history show up in the picker too, so nothing gets lost. Canonical naming keeps an exercise's history from fragmenting across spellings, and the Doelen tab shows per-exercise progression (estimated 1RM / volume / top weight over time) with the muscle group.
+Exercises come from a **built-in library** grouped by muscle (filterable in the add screen); you can also create custom exercises (name + muscle), which are stored and synced. Names already used in your routines/history show up in the picker too, so nothing gets lost. Canonical naming keeps an exercise's history from fragmenting across spellings, and the Doelen tab shows per-exercise progression (estimated 1RM / volume / top weight over time) with the muscle group, plus **weekly training volume per muscle group** so you can see whether your split is balanced.
 
 ## Voeding / macro-tracking
 
