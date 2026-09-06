@@ -29,21 +29,83 @@ export interface FoodCandidate {
   barcode?: string;
 }
 
-// A short starter list so manual entry / quick-add is useful out of the box.
+// A starter list of common (mostly whole) foods, so manual entry / quick-add is
+// useful out of the box — especially for foods Open Food Facts covers poorly.
 // Values are per 100 g unless the unit says otherwise.
 export const COMMON_FOODS: FoodCandidate[] = [
+  // dairy & eggs
   { name: 'Magere kwark', brand: 'Milbona', per100: { kcal: 52, carbs: 4.6, protein: 8.5, fat: 0.5 }, unit: 'g', defaultAmount: 250 },
   { name: 'Griekse yoghurt 0%', per100: { kcal: 57, carbs: 4, protein: 10, fat: 0 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Volle yoghurt', per100: { kcal: 61, carbs: 4.7, protein: 3.5, fat: 3.3 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Hüttenkäse (cottage cheese)', per100: { kcal: 98, carbs: 3.4, protein: 11, fat: 4.3 }, unit: 'g', defaultAmount: 100 },
   { name: 'Ei (gekookt)', per100: { kcal: 155, carbs: 1.1, protein: 13, fat: 11 }, unit: 'g', defaultAmount: 60 },
-  { name: 'Havermout', per100: { kcal: 379, carbs: 60, protein: 13, fat: 7 }, unit: 'g', defaultAmount: 60 },
-  { name: 'Kipfilet (gaar)', per100: { kcal: 165, carbs: 0, protein: 31, fat: 3.6 }, unit: 'g', defaultAmount: 150 },
-  { name: 'Volkoren brood', per100: { kcal: 247, carbs: 41, protein: 9, fat: 3.4 }, unit: 'g', defaultAmount: 35 },
-  { name: 'Banaan', per100: { kcal: 89, carbs: 23, protein: 1.1, fat: 0.3 }, unit: 'g', defaultAmount: 120 },
-  { name: 'Witte rijst (gekookt)', per100: { kcal: 130, carbs: 28, protein: 2.7, fat: 0.3 }, unit: 'g', defaultAmount: 150 },
-  { name: 'Amandelen', per100: { kcal: 579, carbs: 22, protein: 21, fat: 50 }, unit: 'g', defaultAmount: 30 },
-  { name: 'Pindakaas', per100: { kcal: 588, carbs: 20, protein: 25, fat: 50 }, unit: 'g', defaultAmount: 20 },
+  { name: 'Eiwit (los)', per100: { kcal: 52, carbs: 0.7, protein: 11, fat: 0.2 }, unit: 'g', defaultAmount: 33 },
+  { name: '30+ kaas', per100: { kcal: 292, carbs: 0, protein: 27, fat: 20 }, unit: 'g', defaultAmount: 20 },
+  { name: 'Mozzarella', per100: { kcal: 280, carbs: 3, protein: 22, fat: 20 }, unit: 'g', defaultAmount: 30 },
   { name: 'Halfvolle melk', per100: { kcal: 47, carbs: 4.7, protein: 3.5, fat: 1.5 }, unit: 'ml', defaultAmount: 250 },
+  { name: 'Sojamelk (ongezoet)', per100: { kcal: 33, carbs: 0.6, protein: 3.3, fat: 1.8 }, unit: 'ml', defaultAmount: 250 },
+  // meat & fish
+  { name: 'Kipfilet (gaar)', per100: { kcal: 165, carbs: 0, protein: 31, fat: 3.6 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Kipfilet (rauw)', per100: { kcal: 120, carbs: 0, protein: 23, fat: 2.6 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Kipdijfilet', per100: { kcal: 209, carbs: 0, protein: 26, fat: 11 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Mager rundergehakt', per100: { kcal: 175, carbs: 0, protein: 20, fat: 10 }, unit: 'g', defaultAmount: 125 },
+  { name: 'Biefstuk', per100: { kcal: 271, carbs: 0, protein: 26, fat: 19 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Zalm', per100: { kcal: 208, carbs: 0, protein: 20, fat: 13 }, unit: 'g', defaultAmount: 125 },
+  { name: 'Tonijn (in water)', per100: { kcal: 116, carbs: 0, protein: 26, fat: 1 }, unit: 'g', defaultAmount: 100 },
+  { name: 'Witvis (kabeljauw)', per100: { kcal: 82, carbs: 0, protein: 18, fat: 0.7 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Garnalen', per100: { kcal: 99, carbs: 0.2, protein: 24, fat: 0.3 }, unit: 'g', defaultAmount: 100 },
+  { name: 'Kalkoenfilet', per100: { kcal: 135, carbs: 0, protein: 29, fat: 1 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Tofu', per100: { kcal: 76, carbs: 1.9, protein: 8, fat: 4.8 }, unit: 'g', defaultAmount: 100 },
+  // carbs & grains
+  { name: 'Havermout', per100: { kcal: 379, carbs: 60, protein: 13, fat: 7 }, unit: 'g', defaultAmount: 60 },
+  { name: 'Witte rijst (gekookt)', per100: { kcal: 130, carbs: 28, protein: 2.7, fat: 0.3 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Zilvervliesrijst (gekookt)', per100: { kcal: 111, carbs: 23, protein: 2.6, fat: 0.9 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Pasta (gekookt)', per100: { kcal: 158, carbs: 31, protein: 6, fat: 0.9 }, unit: 'g', defaultAmount: 180 },
+  { name: 'Volkoren pasta (gekookt)', per100: { kcal: 149, carbs: 30, protein: 6, fat: 1.3 }, unit: 'g', defaultAmount: 180 },
+  { name: 'Aardappel (gekookt)', per100: { kcal: 87, carbs: 20, protein: 1.9, fat: 0.1 }, unit: 'g', defaultAmount: 200 },
+  { name: 'Zoete aardappel', per100: { kcal: 86, carbs: 20, protein: 1.6, fat: 0.1 }, unit: 'g', defaultAmount: 200 },
+  { name: 'Volkoren brood', per100: { kcal: 247, carbs: 41, protein: 9, fat: 3.4 }, unit: 'g', defaultAmount: 35 },
+  { name: 'Wit brood', per100: { kcal: 265, carbs: 49, protein: 9, fat: 3.2 }, unit: 'g', defaultAmount: 35 },
+  { name: 'Couscous (gekookt)', per100: { kcal: 112, carbs: 23, protein: 3.8, fat: 0.2 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Quinoa (gekookt)', per100: { kcal: 120, carbs: 21, protein: 4.4, fat: 1.9 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Cruesli', per100: { kcal: 450, carbs: 62, protein: 8, fat: 17 }, unit: 'g', defaultAmount: 45 },
+  { name: 'Wrap (tarwe)', per100: { kcal: 310, carbs: 50, protein: 8, fat: 8 }, unit: 'g', defaultAmount: 64 },
+  // legumes
+  { name: 'Kidneybonen', per100: { kcal: 127, carbs: 22, protein: 8.7, fat: 0.5 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Kikkererwten', per100: { kcal: 164, carbs: 27, protein: 9, fat: 2.6 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Linzen (gekookt)', per100: { kcal: 116, carbs: 20, protein: 9, fat: 0.4 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Zwarte bonen', per100: { kcal: 132, carbs: 24, protein: 8.9, fat: 0.5 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Edamame', per100: { kcal: 121, carbs: 9, protein: 12, fat: 5 }, unit: 'g', defaultAmount: 100 },
+  // fruit
+  { name: 'Banaan', per100: { kcal: 89, carbs: 23, protein: 1.1, fat: 0.3 }, unit: 'g', defaultAmount: 120 },
+  { name: 'Appel', per100: { kcal: 52, carbs: 14, protein: 0.3, fat: 0.2 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Sinaasappel', per100: { kcal: 47, carbs: 12, protein: 0.9, fat: 0.1 }, unit: 'g', defaultAmount: 130 },
+  { name: 'Blauwe bessen', per100: { kcal: 57, carbs: 14, protein: 0.7, fat: 0.3 }, unit: 'g', defaultAmount: 100 },
+  { name: 'Aardbeien', per100: { kcal: 32, carbs: 8, protein: 0.7, fat: 0.3 }, unit: 'g', defaultAmount: 100 },
+  { name: 'Druiven', per100: { kcal: 69, carbs: 18, protein: 0.7, fat: 0.2 }, unit: 'g', defaultAmount: 100 },
+  { name: 'Mango', per100: { kcal: 60, carbs: 15, protein: 0.8, fat: 0.4 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Avocado', per100: { kcal: 160, carbs: 9, protein: 2, fat: 15 }, unit: 'g', defaultAmount: 100 },
+  // vegetables
+  { name: 'Broccoli', per100: { kcal: 34, carbs: 7, protein: 2.8, fat: 0.4 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Sperziebonen', per100: { kcal: 31, carbs: 7, protein: 1.8, fat: 0.2 }, unit: 'g', defaultAmount: 150 },
+  { name: 'Wortel', per100: { kcal: 41, carbs: 10, protein: 0.9, fat: 0.2 }, unit: 'g', defaultAmount: 100 },
+  { name: 'Paprika', per100: { kcal: 31, carbs: 6, protein: 1, fat: 0.3 }, unit: 'g', defaultAmount: 100 },
+  { name: 'Tomaat', per100: { kcal: 18, carbs: 3.9, protein: 0.9, fat: 0.2 }, unit: 'g', defaultAmount: 100 },
+  { name: 'Komkommer', per100: { kcal: 15, carbs: 3.6, protein: 0.7, fat: 0.1 }, unit: 'g', defaultAmount: 100 },
+  { name: 'Spinazie', per100: { kcal: 23, carbs: 3.6, protein: 2.9, fat: 0.4 }, unit: 'g', defaultAmount: 100 },
+  { name: 'Champignons', per100: { kcal: 22, carbs: 3.3, protein: 3.1, fat: 0.3 }, unit: 'g', defaultAmount: 100 },
+  // nuts, fats, spreads
+  { name: 'Amandelen', per100: { kcal: 579, carbs: 22, protein: 21, fat: 50 }, unit: 'g', defaultAmount: 30 },
+  { name: 'Walnoten', per100: { kcal: 654, carbs: 14, protein: 15, fat: 65 }, unit: 'g', defaultAmount: 30 },
+  { name: 'Pindakaas', per100: { kcal: 588, carbs: 20, protein: 25, fat: 50 }, unit: 'g', defaultAmount: 20 },
+  { name: 'Olijfolie', per100: { kcal: 884, carbs: 0, protein: 0, fat: 100 }, unit: 'ml', defaultAmount: 10 },
+  { name: 'Roomboter', per100: { kcal: 717, carbs: 0.1, protein: 0.9, fat: 81 }, unit: 'g', defaultAmount: 10 },
+  { name: 'Hummus', per100: { kcal: 177, carbs: 20, protein: 8, fat: 8 }, unit: 'g', defaultAmount: 30 },
+  // supplements & misc
   { name: 'Whey proteïne shake', per100: { kcal: 375, carbs: 8, protein: 75, fat: 5 }, unit: 'g', defaultAmount: 30 },
+  { name: 'Rijstwafel', per100: { kcal: 387, carbs: 82, protein: 8, fat: 3 }, unit: 'g', defaultAmount: 9 },
+  { name: 'Honing', per100: { kcal: 304, carbs: 82, protein: 0.3, fat: 0 }, unit: 'g', defaultAmount: 15 },
+  { name: 'Pure chocolade 85%', per100: { kcal: 592, carbs: 30, protein: 10, fat: 46 }, unit: 'g', defaultAmount: 20 },
 ];
 
 export function dateKey(d: Date): string {

@@ -460,3 +460,9 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--ff-bg); }
 .ff-rtcard-title { font-size: 18px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ff-rtcard-sub { font-family: var(--ff-mono); font-size: 11px; color: var(--ff-muted); margin-top: 3px; }
 .ff-rtcard-ex { font-size: 13px; color: var(--ff-muted); margin-top: 10px; line-height: 1.4; }
+
+/* save-as-meal + saved meal rows */
+.ff-savemeal { background: transparent; border: none; color: var(--ff-muted); cursor: pointer; -webkit-tap-highlight-color: transparent; padding: 2px 6px 0 0; display: inline-flex; vertical-align: middle; }
+.ff-savemeal:active { color: var(--ff-amber); }
+.ff-meal-del { flex-shrink: 0; background: transparent; border: none; color: var(--ff-faint); cursor: pointer; -webkit-tap-highlight-color: transparent; padding: 6px; display: inline-flex; }
+.ff-meal-del:active { color: #e0664a; }

@@ -11,7 +11,7 @@ import {
   scale,
   searchFoods,
 } from '../data/nutrition';
-import type { FoodItem, MealId, RecentFood } from '../types';
+import type { FoodItem, MealId, RecentFood, SavedMeal } from '../types';
 
 const BarcodeScanner = lazy(() => import('./BarcodeScanner'));
 
@@ -28,12 +28,18 @@ const blankDraft = (barcode?: string): FoodCandidate => ({
 export function FoodPicker({
   meal,
   recents,
+  savedMeals,
   onAdd,
+  onAddMeal,
+  onDeleteMeal,
   onClose,
 }: {
   meal: MealId;
   recents: RecentFood[];
+  savedMeals: SavedMeal[];
   onAdd: (item: FoodItem) => void;
+  onAddMeal: (savedMealId: string) => void;
+  onDeleteMeal: (id: string) => void;
   onClose: () => void;
 }) {
   const [step, setStep] = useState<Step>('browse');
@@ -251,6 +257,28 @@ export function FoodPicker({
 
         <div className="ff-scroll" style={{ margin: '14px -18px 0' }}>
           <div style={{ padding: '0 18px' }}>
+            {!ql && savedMeals.length > 0 && (
+              <>
+                <div className="ff-sublabel" style={{ marginBottom: 8 }}>Maaltijden</div>
+                {savedMeals.map((m) => {
+                  const kcal = m.items.reduce((a, it) => a + scale(it.per100, it.amount).kcal, 0);
+                  return (
+                    <div key={m.id} className="ff-food-row" onClick={() => { onAddMeal(m.id); onClose(); }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div className="ff-food-row-name">{m.name}</div>
+                        <div className="ff-food-row-sub">{m.items.length} items · {kcal} kcal</div>
+                      </div>
+                      <button
+                        className="ff-meal-del"
+                        onClick={(e) => { e.stopPropagation(); if (confirm(`Maaltijd "${m.name}" verwijderen?`)) onDeleteMeal(m.id); }}
+                        aria-label="Verwijder maaltijd"
+                      >{Ic.trash(15)}</button>
+                    </div>
+                  );
+                })}
+                <div style={{ height: 18 }} />
+              </>
+            )}
             {recentCands.length > 0 && (
               <>
                 <div className="ff-sublabel" style={{ marginBottom: 8 }}>Recent</div>

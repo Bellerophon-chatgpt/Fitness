@@ -86,6 +86,24 @@ export function deriveMacros(kcal: number, weightKg: number | null): Macros {
   return { kcal: Math.round(kcal), carbs, protein, fat };
 }
 
+// Smoothed "trend weight": an exponentially weighted moving average that filters
+// out day-to-day noise (Hacker's-Diet style). Aligned 1:1 with the entries.
+export function trendWeights(entries: WeightEntry[], alpha = 0.1): number[] {
+  const out: number[] = [];
+  let t = 0;
+  entries.forEach((e, i) => {
+    t = i === 0 ? e.kg : t + alpha * (e.kg - t);
+    out.push(Math.round(t * 100) / 100);
+  });
+  return out;
+}
+
+export function currentTrend(entries: WeightEntry[]): number | null {
+  if (!entries.length) return null;
+  const t = trendWeights(entries);
+  return t[t.length - 1];
+}
+
 export interface ActiveGoals {
   goals: Macros;
   maintenance: number | null;

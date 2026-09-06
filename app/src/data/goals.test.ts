@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { mifflinBMR, weightSlopePerDay, deriveMacros, estimateMaintenance, activeGoals } from './goals';
+import { mifflinBMR, weightSlopePerDay, deriveMacros, estimateMaintenance, activeGoals, trendWeights, currentTrend } from './goals';
 import type { FoodItem, NutritionDay, Store, WeightEntry } from '../types';
 
 const food = (kcal: number): FoodItem => ({
@@ -88,6 +88,28 @@ describe('estimateMaintenance', () => {
 
   it('returns null without profile or data', () => {
     expect(estimateMaintenance({ days: {} }, now)).toBeNull();
+  });
+});
+
+describe('trendWeights', () => {
+  const w = (kg: number): WeightEntry => ({ date: '2026-01-01', kg });
+
+  it('starts at the first value and lags toward later values', () => {
+    const t = trendWeights([w(80), w(82), w(82), w(82)], 0.1);
+    expect(t[0]).toBe(80);
+    expect(t[1]).toBeCloseTo(80.2, 5);
+    expect(t[3]).toBeGreaterThan(t[1]);
+    expect(t[3]).toBeLessThan(82);
+  });
+
+  it('smooths out a single spike', () => {
+    const t = trendWeights([w(80), w(80), w(85), w(80)], 0.1);
+    expect(t[2]).toBeLessThan(81);
+  });
+
+  it('currentTrend returns the last smoothed value, or null', () => {
+    expect(currentTrend([])).toBeNull();
+    expect(currentTrend([w(80), w(80)])).toBe(80);
   });
 });
 

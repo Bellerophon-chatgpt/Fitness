@@ -7,7 +7,7 @@ import { WeightChart } from '../components/WeightChart';
 import { EditNum } from '../components/EditNum';
 import { Ic } from '../components/Icons';
 import { dateKey, dayTotal, hasFood, newId, ZERO } from '../data/nutrition';
-import { activeGoals } from '../data/goals';
+import { activeGoals, currentTrend } from '../data/goals';
 import { currentWeekDots, daysSinceLastSession, sessionsThisMonth, weekStart, weekStreak } from '../data/training';
 import { bestE1RMHistory, muscleVolume } from '../data/workout';
 import { MUSCLE_LABEL, MUSCLES, muscleOf } from '../data/exercises';
@@ -84,6 +84,8 @@ export function DoelenTab({
   const wGoal = store.weightGoal;
   const [w, setW] = useState<number>(current ?? 80);
   const delta = current != null && wGoal != null ? Math.round((current - wGoal) * 10) / 10 : null;
+  const trend = currentTrend(weightLog);
+  const trendDelta = trend != null && wGoal != null ? Math.round((trend - wGoal) * 10) / 10 : null;
 
   // strength goals (editable)
   const strength = store.strengthGoals ?? DEFAULT_STRENGTH;
@@ -230,7 +232,12 @@ export function DoelenTab({
           <div className="ff-weight">
             <div className="ff-weight-head">
               <div className="ff-weight-now">{current != null ? current : '—'}<span> kg</span></div>
-              {delta != null && (
+              {trend != null && weightLog.length > 1 && (
+                <div className="ff-weight-delta">
+                  trend {trend} kg{trendDelta != null ? ` · ${trendDelta === 0 ? 'op doel' : `${Math.abs(trendDelta)} ${trendDelta > 0 ? 'boven' : 'onder'} doel`}` : ''}
+                </div>
+              )}
+              {(trend == null || weightLog.length <= 1) && delta != null && (
                 <div className="ff-weight-delta">{delta === 0 ? 'Doel bereikt' : `${Math.abs(delta)} kg ${delta > 0 ? 'boven' : 'onder'} doel`}</div>
               )}
             </div>

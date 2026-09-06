@@ -38,6 +38,9 @@ export function VoedingTab({
   saveGoalConfig,
   copyPreviousDay,
   addWater,
+  saveMeal,
+  addSavedMeal,
+  deleteSavedMeal,
 }: {
   store: Store;
   addFood: (dk: string, meal: MealId, item: FoodItem) => void;
@@ -46,6 +49,9 @@ export function VoedingTab({
   saveGoalConfig: (c: { mode: 'manual' | 'adaptive'; macroGoals: Macros; profile?: Profile; goalRate: number }) => void;
   copyPreviousDay: (dk: string) => void;
   addWater: (dk: string, deltaMl: number) => void;
+  saveMeal: (name: string, items: FoodItem[]) => void;
+  addSavedMeal: (dk: string, meal: MealId, savedMealId: string) => void;
+  deleteSavedMeal: (id: string) => void;
 }) {
   const [offset, setOffset] = useState(0);
   const [picker, setPicker] = useState<MealId | null>(null);
@@ -132,7 +138,16 @@ export function VoedingTab({
               <div key={meal} className="ff-meal">
                 <div className="ff-meal-head">
                   <span className="nm">{label}</span>
-                  <span className="kc">{Ic.flame(13, 'var(--ff-faint)')} {mt.kcal} kcal</span>
+                  <span className="kc">
+                    {items.length > 0 && (
+                      <button
+                        className="ff-savemeal"
+                        onClick={() => { const nm = prompt('Naam voor deze maaltijd:', label); if (nm) saveMeal(nm, items); }}
+                        aria-label="Bewaar als maaltijd"
+                      >{Ic.bookmark(13)}</button>
+                    )}
+                    {Ic.flame(13, 'var(--ff-faint)')} {mt.kcal} kcal
+                  </span>
                 </div>
                 {items.map((it) => {
                   const m = itemMacros(it);
@@ -184,7 +199,10 @@ export function VoedingTab({
         <FoodPicker
           meal={picker}
           recents={store.recentFoods ?? []}
+          savedMeals={store.savedMeals ?? []}
           onAdd={(item) => addFood(dk, picker, item)}
+          onAddMeal={(id) => addSavedMeal(dk, picker, id)}
+          onDeleteMeal={deleteSavedMeal}
           onClose={() => setPicker(null)}
         />
       )}

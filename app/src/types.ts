@@ -109,6 +109,13 @@ export interface Nutrients {
 
 export type NutritionDay = Record<MealId, FoodItem[]>;
 
+// A saved combination of foods that can be added in one tap.
+export interface SavedMeal {
+  id: string;
+  name: string;
+  items: Omit<FoodItem, 'id'>[];
+}
+
 // A food the user has logged before, kept for quick re-adding.
 export interface RecentFood {
   key: string; // dedupe key (barcode, or name+brand)
@@ -155,6 +162,7 @@ export interface Store {
   nutrition?: Record<string, NutritionDay>;
   macroGoals?: Macros;
   recentFoods?: RecentFood[];
+  savedMeals?: SavedMeal[];
   weightLog?: WeightEntry[];
   weightGoal?: number;
   strengthGoals?: StrengthGoal[];

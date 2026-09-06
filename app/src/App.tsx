@@ -17,7 +17,7 @@ import { authEnabled, getSession, onAuthChange, signOut } from './data/auth';
 import { AuthGate } from './screens/AuthGate';
 import type { Session } from '@supabase/supabase-js';
 import { buildLiveWorkout, deriveRoutines, liveToSession, newPRs } from './data/workout';
-import type { ExerciseDef, FoodItem, Macros, MealId, OverlayState, Profile, Routine, SetEntry, StrengthGoal, Store, TabId, Theme } from './types';
+import type { ExerciseDef, FoodItem, Macros, MealId, OverlayState, Profile, Routine, SavedMeal, SetEntry, StrengthGoal, Store, TabId, Theme } from './types';
 
 function readTheme(): Theme {
   try {
@@ -188,6 +188,39 @@ export default function App() {
     });
     flash(item.name + ' toegevoegd');
   };
+
+  const saveMeal = (name: string, items: FoodItem[]) => {
+    if (!items.length) return;
+    update((n) => {
+      const meal: SavedMeal = {
+        id: newId(),
+        name: name.trim() || 'Maaltijd',
+        items: items.map((it) => ({ name: it.name, brand: it.brand, amount: it.amount, unit: it.unit, per100: it.per100, micros: it.micros, barcode: it.barcode })),
+      };
+      n.savedMeals = [...(n.savedMeals ?? []), meal];
+    });
+    flash('Maaltijd opgeslagen');
+  };
+
+  const addSavedMeal = (dk: string, meal: MealId, savedMealId: string) => {
+    let added = 0;
+    update((n) => {
+      const sm = (n.savedMeals ?? []).find((m) => m.id === savedMealId);
+      if (!sm) return;
+      if (!n.nutrition) n.nutrition = {};
+      if (!n.nutrition[dk]) n.nutrition[dk] = emptyDay();
+      for (const it of sm.items) {
+        const item: FoodItem = { ...it, id: newId() };
+        n.nutrition[dk]![meal].push(item);
+        n.recentFoods = pushRecent(n.recentFoods, item);
+      }
+      added = sm.items.length;
+    });
+    if (added) flash(`${added} item${added !== 1 ? 's' : ''} toegevoegd`);
+  };
+
+  const deleteSavedMeal = (id: string) =>
+    update((n) => { n.savedMeals = (n.savedMeals ?? []).filter((m) => m.id !== id); });
 
   const updateFoodAmount = (dk: string, meal: MealId, id: string, amount: number) =>
     update((n) => {
@@ -398,7 +431,7 @@ export default function App() {
 
   let screen;
   if (tab === 'training') screen = <TrainingTab store={store} openFocus={openFocus} toggleSession={toggleSessionToday} startWorkout={startWorkout} toggleLiveSet={toggleLiveSet} finishWorkout={finishWorkout} discardWorkout={discardWorkout} />;
-  else if (tab === 'voeding') screen = <VoedingTab store={store} addFood={addFood} updateAmount={updateFoodAmount} removeFood={removeFood} saveGoalConfig={saveGoalConfig} copyPreviousDay={copyPreviousDay} addWater={addWater} />;
+  else if (tab === 'voeding') screen = <VoedingTab store={store} addFood={addFood} updateAmount={updateFoodAmount} removeFood={removeFood} saveGoalConfig={saveGoalConfig} copyPreviousDay={copyPreviousDay} addWater={addWater} saveMeal={saveMeal} addSavedMeal={addSavedMeal} deleteSavedMeal={deleteSavedMeal} />;
   else if (tab === 'schema') screen = <SchemaTab store={store} addRoutine={addRoutine} updateRoutineMeta={updateRoutineMeta} deleteRoutine={deleteRoutine} setExerciseSets={setRoutineExerciseSets} removeExercise={removeRoutineExercise} moveExercise={moveRoutineExercise} openAdd={openAdd} />;
   else if (tab === 'coaching') screen = <CoachingTab store={store} goDay={() => setTab('training')} />;
   else screen = <DoelenTab store={store} email={session?.user.email ?? null} onSignOut={session ? doSignOut : undefined} logWeight={logWeight} setWeightGoal={setWeightGoal} setStrengthGoals={setStrengthGoals} onImport={replaceStore} />;
