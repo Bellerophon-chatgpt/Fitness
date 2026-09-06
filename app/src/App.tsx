@@ -310,6 +310,21 @@ export default function App() {
 
   const discardWorkout = () => update((n) => { n.liveWorkout = undefined; });
 
+  const addLiveSet = (ei: number) =>
+    update((n) => {
+      const ex = n.liveWorkout?.ex[ei];
+      if (!ex || ex.sets.length >= 12) return;
+      const t = ex.sets[ex.sets.length - 1] || { weight: 20, reps: 10, done: false, last: null };
+      ex.sets.push({ weight: t.weight, reps: t.reps, done: false, last: t.last ?? null });
+    });
+
+  const removeLiveSet = (ei: number) =>
+    update((n) => {
+      const ex = n.liveWorkout?.ex[ei];
+      if (!ex || ex.sets.length <= 1) return;
+      ex.sets.pop();
+    });
+
   // keep screen awake while a workout (focus mode) is open
   useEffect(() => {
     const active = overlay?.type === 'focus';
@@ -380,6 +395,8 @@ export default function App() {
                 exIdx={overlay.exIdx}
                 workoutLog={store.workoutLog}
                 updateSet={updateLiveSet}
+                addSet={addLiveSet}
+                removeSet={removeLiveSet}
                 onClose={() => setOverlay(null)}
                 onNav={navFocus}
                 onFinish={() => { finishWorkout(); setOverlay(null); }}

@@ -436,3 +436,10 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--ff-bg); }
 .ff-volrow-top span:first-child { font-size: 14px; font-weight: 600; }
 .ff-volrow-top .v { font-family: var(--ff-mono); font-size: 12px; color: var(--ff-muted); white-space: nowrap; }
 .ff-vol-total { font-family: var(--ff-mono); font-size: 11px; letter-spacing: .06em; color: var(--ff-faint); text-transform: uppercase; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--ff-line); text-align: right; }
+
+/* set-count control (FocusMode) */
+.ff-setcount { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 12px; }
+.ff-setcount span { font-family: var(--ff-mono); font-size: 11px; letter-spacing: .06em; color: var(--ff-muted); text-transform: uppercase; min-width: 52px; text-align: center; }
+.ff-setcount button { border: 1px solid var(--ff-line); background: transparent; color: var(--ff-amber); font-family: var(--ff-mono); font-size: 12px; font-weight: 700; border-radius: 9px; padding: 6px 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ff-setcount button:disabled { color: var(--ff-faint); opacity: .5; cursor: default; }
+.ff-setcount button:active:not(:disabled) { background: var(--ff-card); }

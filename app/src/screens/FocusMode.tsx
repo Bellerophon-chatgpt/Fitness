@@ -12,6 +12,8 @@ export function FocusMode({
   exIdx,
   workoutLog,
   updateSet,
+  addSet,
+  removeSet,
   onClose,
   onNav,
   onFinish,
@@ -20,6 +22,8 @@ export function FocusMode({
   exIdx: number;
   workoutLog?: WorkoutSession[];
   updateSet: (ei: number, si: number, patch: Partial<SetEntry>) => void;
+  addSet: (ei: number) => void;
+  removeSet: (ei: number) => void;
   onClose: () => void;
   onNav: (dir: 1 | -1) => void;
   onFinish: () => void;
@@ -90,6 +94,11 @@ export function FocusMode({
                 <div key={i} className={'ff-dot' + (s.done ? ' done' : i === cur ? ' cur' : '')} />
               ))}
             </div>
+          </div>
+          <div className="ff-setcount">
+            <button onClick={() => removeSet(exIdx)} disabled={ex.sets.length <= 1}>− set</button>
+            <span>{ex.sets.length} sets</span>
+            <button onClick={() => addSet(exIdx)} disabled={ex.sets.length >= 12}>+ set</button>
           </div>
         </div>
 
