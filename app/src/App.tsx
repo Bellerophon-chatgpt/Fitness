@@ -253,6 +253,16 @@ export default function App() {
     flash('Gewicht opgeslagen');
   };
 
+  const importHealthWeights = (samples: { date: string; kg: number }[]) => {
+    if (!samples.length) return;
+    update((n) => {
+      const byDate = new Map((n.weightLog ?? []).map((w) => [w.date, w.kg]));
+      for (const s of samples) byDate.set(s.date, s.kg);
+      n.weightLog = [...byDate.entries()].map(([date, kg]) => ({ date, kg })).sort((a, b) => (a.date < b.date ? -1 : 1));
+    });
+    flash(`Gewicht gesynchroniseerd (${samples.length})`);
+  };
+
   const setWeightGoal = (kg: number) => update((n) => { n.weightGoal = kg; });
   const setStrengthGoals = (list: StrengthGoal[]) => update((n) => { n.strengthGoals = list; });
 
@@ -434,7 +444,7 @@ export default function App() {
   else if (tab === 'voeding') screen = <VoedingTab store={store} addFood={addFood} updateAmount={updateFoodAmount} removeFood={removeFood} saveGoalConfig={saveGoalConfig} copyPreviousDay={copyPreviousDay} addWater={addWater} saveMeal={saveMeal} addSavedMeal={addSavedMeal} deleteSavedMeal={deleteSavedMeal} />;
   else if (tab === 'schema') screen = <SchemaTab store={store} addRoutine={addRoutine} updateRoutineMeta={updateRoutineMeta} deleteRoutine={deleteRoutine} setExerciseSets={setRoutineExerciseSets} removeExercise={removeRoutineExercise} moveExercise={moveRoutineExercise} openAdd={openAdd} />;
   else if (tab === 'coaching') screen = <CoachingTab store={store} goDay={() => setTab('training')} />;
-  else screen = <DoelenTab store={store} email={session?.user.email ?? null} onSignOut={session ? doSignOut : undefined} logWeight={logWeight} setWeightGoal={setWeightGoal} setStrengthGoals={setStrengthGoals} onImport={replaceStore} />;
+  else screen = <DoelenTab store={store} email={session?.user.email ?? null} onSignOut={session ? doSignOut : undefined} logWeight={logWeight} setWeightGoal={setWeightGoal} setStrengthGoals={setStrengthGoals} onImport={replaceStore} onImportWeights={importHealthWeights} />;
 
   return (
     <SyncCtx.Provider value={{ offline, syncEnabled: syncing }}>

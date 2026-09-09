@@ -8,6 +8,7 @@ import { EditNum } from '../components/EditNum';
 import { Ic } from '../components/Icons';
 import { dateKey, dayTotal, hasFood, newId, ZERO } from '../data/nutrition';
 import { activeGoals, currentTrend } from '../data/goals';
+import { isNativeHealth, readHealthWeights } from '../data/health';
 import { currentWeekDots, daysSinceLastSession, sessionsThisMonth, weekStart, weekStreak } from '../data/training';
 import { bestE1RMHistory, muscleVolume } from '../data/workout';
 import { MUSCLE_LABEL, MUSCLES, muscleOf } from '../data/exercises';
@@ -60,6 +61,7 @@ export function DoelenTab({
   setWeightGoal,
   setStrengthGoals,
   onImport,
+  onImportWeights,
 }: {
   store: Store;
   email?: string | null;
@@ -68,6 +70,7 @@ export function DoelenTab({
   setWeightGoal: (kg: number) => void;
   setStrengthGoals: (list: StrengthGoal[]) => void;
   onImport: (s: Store) => void;
+  onImportWeights: (samples: { date: string; kg: number }[]) => void;
 }) {
   const goals = activeGoals(store).goals;
   const { avg, loggedDays } = weeklyAverage(store);
@@ -83,6 +86,14 @@ export function DoelenTab({
   const current = weightLog.length ? weightLog[weightLog.length - 1].kg : null;
   const wGoal = store.weightGoal;
   const [w, setW] = useState<number>(current ?? 80);
+  const [healthSyncing, setHealthSyncing] = useState(false);
+  const syncHealth = async () => {
+    setHealthSyncing(true);
+    const samples = await readHealthWeights();
+    setHealthSyncing(false);
+    if (samples.length) onImportWeights(samples);
+    else alert('Geen gewichtsdata gevonden in Health, of geen toegang gegeven.');
+  };
   const delta = current != null && wGoal != null ? Math.round((current - wGoal) * 10) / 10 : null;
   const trend = currentTrend(weightLog);
   const trendDelta = trend != null && wGoal != null ? Math.round((trend - wGoal) * 10) / 10 : null;
@@ -254,6 +265,11 @@ export function DoelenTab({
               <span>Streefgewicht</span>
               <div className="ff-macrofield ff-weight-goalfield"><EditNum value={wGoal ?? current ?? 80} unit="kg" onCommit={setWeightGoal} /></div>
             </div>
+            {isNativeHealth() && (
+              <button className="ff-btn ff-btn-ghost" style={{ marginTop: 12 }} disabled={healthSyncing} onClick={syncHealth}>
+                {healthSyncing ? 'Synchroniseren…' : 'Synchroniseer met Apple Health / Health Connect'}
+              </button>
+            )}
           </div>
 
           {/* weekly nutrition */}

@@ -76,6 +76,17 @@ Daily targets can be set two ways (tap the macro ring to switch): **manual** mac
 
 The Doelen tab has a **Gegevens** section to export the full store as a JSON file and to import one back (import replaces the current data after a confirm). Handy as an occasional off-device backup on top of the Supabase sync.
 
+## Native apps + Health sync
+
+The app also ships as native iOS/Android apps via **Capacitor**, which unlocks
+**Apple Health (HealthKit)** and **Google Health Connect**. In the Doelen tab
+(native only), "Synchroniseer met Health" reads recent bodyweight samples (e.g.
+from a smart scale) and merges them into the weight log, feeding the trend line
+and adaptive goal automatically. The web/PWA build is unaffected — the health
+plugin is lazy-loaded and never runs in the browser. Building the native apps
+happens on your own machine (Mac + Xcode for iOS, Android Studio for Android);
+see [`NATIVE_SETUP.md`](./NATIVE_SETUP.md).
+
 ## Development
 
 - `npm run dev` — dev server
